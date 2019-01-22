@@ -7,55 +7,53 @@ SHELL = /bin/sh
 PATH  = .
 
 RM    = /bin/rm
-LN_S  = /bin/ln -sf
 MAKE  = /usr/bin/make
+
+LD    = ../bin/ld3
+AS    = ../bin/as3
+LIBC  = ../bin/libc.o
+CRT0  = ../bin/crt0.o
 
 all:	ccx cpp cc cmp
 
-# INIT and XINIT are programs imported from the previous stage.  The only 
-# difference is that XINIT gets a '0' appended on import as they get 
-# rebuilt in this stage.
-INIT  = as ld libc.o crt0.o
-XINIT = cc0
+INIT  = $(AS) $(LD) $(LIBC) $(CRT0) ../bin/cc4
 
-init:	$(INIT) $(XINIT)
+init:	$(INIT) 
 
-# cc0  is the compiler symlinked from stage 4.
-# ccx1 is this stage's compiler (written in the cc0 language) compiled with cc0.
+# cc4  is the compiler symlinked from stage 4.
+# ccx0 is this stage's compiler (written in the cc0 language) compiled with cc0.
 # ccx  is nearly the same code, though with a replacement node.c, compiled 
 #        by itself (by ccx1), and is therefore smaller.
 # ccx2 is a test compiler produced by ccx; it should be binary identical to ccx.
 
-$(INIT) $(XINIT):
+$(INIT):
 	$(MAKE) -C ../stage-4
-	set -e; for x in $(INIT); do $(LN_S) ../stage-4/$$x; done
-	$(LN_S) ../stage-4/cc cc0
 
 # Suppress the default rules
 .SUFFIXES:
 
-%.o:	%.s as
-	as $<
+%.o:	%.s $(AS)
+	$(AS) $<
 
-%0.s:	%.c cc0
-	cc0 -S -o $@ $<
+%0.s:	%.c ../bin/cc4
+	../bin/cc4 -S -o $@ $<
 
 # The --compatibility=4 flag enables compatibility with the stage-4 cc.
-%1.s:	%.c ccx1
-	ccx1 --compatibility=4 -o $@ $<
+%1.s:	%.c ccx0
+	../bin/ccx0 --compatibility=4 -o $@ $<
 
 # We cannot remove --compatibility=4 on this build, because of the untyped
 # use of structs-as-arrays in the code.  They should be coded as structs,
 # but that's not possible because it would be too difficult to add struct 
 # support to the stage-4 cc.
 %2.s:	%.i ccx
-	ccx --compatibility=4 -o $@ $<
+	../bin/ccx --compatibility=4 -o $@ $<
 
 %.i:	%.c cpp
-	cpp -Iinclude -o $@ $<
+	../bin/cpp -Iinclude -o $@ $<
 
 %.s:	%.c ccx
-	ccx -o $@ $<
+	../bin/ccx -o $@ $<
 
 # All these files get compiled with --compatibility=4
 CCX_OBJS  = scanbase.o scanner.o symtab.o expr.o stmt.o type.o \
@@ -66,11 +64,11 @@ CCX_OBJS  = scanbase.o scanner.o symtab.o expr.o stmt.o type.o \
 CCX0_OBJS = $(CCX_OBJS) node.o
 CCX1_OBJS = $(CCX_OBJS) nodenew.o
 
-ccx1:	ld libc.o crt0.o $(CCX0_OBJS:%.o=%0.o)
-	ld -o $@ crt0.o $(CCX0_OBJS:%.o=%0.o) libc.o
+ccx0:	$(LD) $(LIBC) $(CRT0) $(CCX0_OBJS:%.o=%0.o)
+	$(LD) -o ../bin/$@ $(CRT0) $(CCX0_OBJS:%.o=%0.o) $(LIBC)
 
-ccx:	ld libc.o crt0.o $(CCX1_OBJS:%.o=%1.o)
-	ld -o $@ crt0.o $(CCX1_OBJS:%.o=%1.o) libc.o
+ccx:	$(LD) $(LIBC) $(CRT0) $(CCX1_OBJS:%.o=%1.o)
+	$(LD) -o ../bin/$@ $(CRT0) $(CCX1_OBJS:%.o=%1.o) $(LIBC)
 
 # These files need to compile without preprocessing, and are not given
 # --compatiibility=4.  Note that cli.o, scanbase.o and expr.o are also 
@@ -78,13 +76,13 @@ ccx:	ld libc.o crt0.o $(CCX1_OBJS:%.o=%1.o)
 CPP_OBJS = scanbase.o cpp.o nodenew.o macros.o pvector.o cli.o expr.o \
            cpptype.o eval.o
 
-cpp:	ld libc.o crt0.o $(CPP_OBJS)
-	ld -o $@ crt0.o $(CPP_OBJS) libc.o
+cpp:	$(LD) $(LIBC) $(CRT0) $(CPP_OBJS)
+	$(LD) -o ../bin/$@ $(CRT0) $(CPP_OBJS) $(LIBC)
 
 CC_OBJS = pvector.o timeconv.o cc.o cli.o
 
-cc:	ld libc.o crt0.o $(CC_OBJS:%.o=%2.o)
-	ld -o $@ crt0.o $(CC_OBJS:%.o=%2.o) libc.o
+cc:	$(LD) $(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o)
+	$(LD) -o ../bin/$@ $(CRT0) $(CC_OBJS:%.o=%2.o) $(LIBC)
 
 cmp:	cc cmp.c cli.c
 	cc -o cmp cmp.c cli.c
@@ -108,7 +106,7 @@ check-cmp: ccx2 cc2 cmp
 	! cmp -s cc2 ccx2
 	$(RM) -f cc2 ccx2
 
-# Build ccx2 and cc2 with a single command.  This is a good test of the 
+# Bui$(LD) ccx2 and cc2 with a single command.  This is a good test of the 
 # driver logic.
 ccx2:	cc $(CCX1_OBJS:%.o=%.c)
 	cc -o ccx2 --compatibility=4 $(CCX1_OBJS:%.o=%.c)
@@ -119,7 +117,3 @@ cc2:	cc ccx2 $(CC_OBJS:%.o=%.c)
 check:	check-cmp
 	$(MAKE) -r -C cpp-tests $@
 
-world:
-	$(MAKE) clean
-	$(MAKE) all
-	$(MAKE) check

@@ -7,27 +7,26 @@ SHELL = /bin/sh
 PATH  = .
 
 RM    = /bin/rm
-LN_S  = /bin/ln -sf
 MAKE  = /usr/bin/make
 CMP   = /usr/bin/cmp
+AS    = ../bin/as3
+LD    = ../bin/ld3
 
 all:	cc
 
-init:	as ld
+init:	../bin/as3 ../bin/ld3
 
-as ld:
+../bin/as3 ../bin/ld3:
 	$(MAKE) -C ../stage-3
-	$(LN_S) ../stage-3/as
-	$(LN_S) ../stage-3/ld
 
 # Suppress the default rules
 .SUFFIXES:
 
-%.o:	%.s as
-	as $<
+%.o:	%.s ../bin/as3
+	$(AS) $<
 
 %.s:	%.c cc0
-	cc0 -S $<
+	../bin/cc4_0 -S $<
 
 # LIB_OBJS contain a minimal C library written entirely in assembler.
 # LIB0_OBJS adds bootstrap .o files written in assembler that will be replaced.
@@ -45,18 +44,18 @@ CC_OBJS  = i386.o scanner.o symtab.o expr.o stmt.o main.o
 # libc.o  is the complete stage-4 libc, with some C code compiled using cc0.
 # cc      is the compiler relinked against the new libc.o.
 
-libc0.o:	ld $(LIB0_OBJS)
-	ld -r -o libc0.o $(LIB0_OBJS)
+libc0.o:	$(LD) $(LIB0_OBJS)
+	$(LD) -r -o ../bin/libc0.o $(LIB0_OBJS)
 
-cc0:	ld libc0.o crt0.o $(CC_OBJS)
-	ld -o cc0 libc0.o crt0.o $(CC_OBJS)
+cc0:	$(LD) libc0.o crt0.o $(CC_OBJS)
+	$(LD) -o ../bin/cc4_0 ../bin/libc0.o crt0.o $(CC_OBJS)
 
 
-libc.o:	ld $(LIB1_OBJS)
-	ld -r -o libc.o $(LIB1_OBJS)
+libc.o:	$(LD) $(LIB1_OBJS)
+	$(LD) -r -o ../bin/libc.o $(LIB1_OBJS)
 
-cc:	ld libc.o crt0.o $(CC_OBJS)
-	ld -o cc libc.o crt0.o $(CC_OBJS)
+cc:	$(LD) libc.o crt0.o $(CC_OBJS)
+	$(LD) -o ../bin/cc4 ../bin/libc.o crt0.o $(CC_OBJS)
 
 .INTERMEDIATE:	$(CC_OBJS) $(LIB1_OBJS) $(LIB0_OBJS) libc0.o cc0
 

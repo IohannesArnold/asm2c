@@ -9,6 +9,10 @@ SHELL = /bin/sh
 PATH  = .
 
 MAKE  = /usr/bin/make
+RM = /usr/bin/rm
 
-all init check clean world:
+all init check world:
 	set -e; for n in $(STAGES); do $(MAKE) -r -C stage-$$n $@; done
+
+clean:
+	$(RM) -rf bin
