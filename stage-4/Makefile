@@ -19,7 +19,7 @@ include ../config.make
 LD = $(BUILD)/ld
 AS = $(BUILD)/as
 
-all:	$(BUILD)/bc $(BUILD)/crt0.o $(BUILD)/libc.o
+all:	$(BUILD)/bc $(BUILD)/crt0.o $(BUILD)/libc.o $(BUILD)/include
 
 $(LD) $(AS):
 	$(MAKE) -C ../stage-3
@@ -66,6 +66,9 @@ $(BUILD)/bc:	$(LD) $(BUILD)/libc.o crt0.o $(CC_OBJS)
 	$(LD) -o $(BUILD)/bc $(BUILD)/libc.o crt0.o $(CC_OBJS)
 
 .INTERMEDIATE:	$(CC_OBJS) $(LIB1_OBJS) $(LIB0_OBJS) libc0.o bc0
+
+$(BUILD)/include:	./include
+	$(CP) -r ./include $(BUILD)/include
 
 check:	check-output check-input check-malloc
 
