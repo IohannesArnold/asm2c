@@ -30,7 +30,7 @@ $(LD) $(AS):
 %.o:	%.s $(AS)
 	$(AS) $<
 
-%.s:	%.c $(BUILD)/bc0
+%.s:	%.b $(BUILD)/bc0
 	$(BUILD)/bc0 -S $<
 
 # LIB_OBJS contain a minimal C library written entirely in assembler.
@@ -72,26 +72,26 @@ $(BUILD)/include:	./include
 
 check:	check-output check-input check-malloc
 
-check-output: $(BUILD)/bc $(BUILD)/as output.c output.o
-	$(CP) output.c output2.c
-	$(BUILD)/bc -S output2.c
+check-output: $(BUILD)/bc $(BUILD)/as output.b output.o
+	$(CP) output.b output2.b
+	$(BUILD)/bc -S output2.b
 	$(BUILD)/as output2.s
 	$(CMP) output2.o output.o
-	$(RM) output2.c output2.o output2.s
+	$(RM) output2.b output2.o output2.s
 
-check-input: $(BUILD)/bc $(BUILD)/as input.c input.o
-	$(CP) input.c input2.c
-	$(BUILD)/bc -S input2.c
+check-input: $(BUILD)/bc $(BUILD)/as input.b input.o
+	$(CP) input.b input2.b
+	$(BUILD)/bc -S input2.b
 	$(BUILD)/as input2.s
 	$(CMP) input2.o input.o
-	$(RM) input2.c input2.o input2.s
+	$(RM) input2.b input2.o input2.s
 
-check-malloc: $(BUILD)/bc $(BUILD)/as malloc.c malloc.o
-	$(CP) malloc.c malloc2.c
-	$(BUILD)/bc -S malloc2.c
+check-malloc: $(BUILD)/bc $(BUILD)/as malloc.b malloc.o
+	$(CP) malloc.b malloc2.b
+	$(BUILD)/bc -S malloc2.b
 	$(BUILD)/as malloc2.s
 	$(CMP) malloc2.o malloc.o
-	$(RM) malloc2.c malloc2.o malloc2.s
+	$(RM) malloc2.b malloc2.o malloc2.s
 
 clean:
 	$(RM) -f $(LIB0_OBJS)

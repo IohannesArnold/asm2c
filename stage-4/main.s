@@ -505,7 +505,7 @@ main:
 	CALL	strlen
 	POP	%edx
 	ADDL	%eax, %edx
-	CMPB	'c', -1(%edx)
+	CMPB	'b', -1(%edx)
 	JNE	_error
 	CMPB	'.', -2(%edx)
 	JNE	_error
