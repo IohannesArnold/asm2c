@@ -23,7 +23,7 @@ CRT0  = $(BUILD)/crt0.o
 
 all:	$(BUILD)/ccx $(BUILD)/cpp $(BUILD)/cc $(BUILD)/cmp
 
-INIT  = $(AS) $(LD) $(LIBC) $(CRT0) $(BUILD)/bc
+INIT  = $(AS) $(LD) $(LIBC) $(CRT0) $(BUILD)/bc $(BUILD)/include
 
 init:	$(INIT) 
 
@@ -55,7 +55,7 @@ $(INIT):
 	$(BUILD)/ccx -o $@ $<
 
 %.i:	%.c $(BUILD)/cpp
-	$(BUILD)/cpp -Iinclude -o $@ $<
+	$(BUILD)/cpp -I$(BUILD)/include -o $@ $<
 
 %.s:	%.b $(BUILD)/ccx
 	$(BUILD)/ccx -o $@ $<
