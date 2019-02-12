@@ -5,11 +5,6 @@
  * All rights reserved.
  */
 
-/* This disables the errors on incompatibilities with stage-4. 
- * This is safe because this file is never processed with the stage-4
- * compiler (and, indeed, wouldn't compile if were). */
-#pragma RBC compatibility 5 
-
 static
 rc_count = 0;
 
@@ -370,7 +365,7 @@ node_strcat( node_ptr, len_ptr, str, len )
 }
     
 /* Push-back facility doesn't really belong here, but having to keep 
- * compatibility with the stage-4 cc is tricky. */
+ * compatibility with the stage-4 bc is tricky. */
 static struct pb_slot {
     struct node* node;
     struct pb_slot* next;

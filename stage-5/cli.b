@@ -1,4 +1,4 @@
-/* cli.c  --  command line interface utils
+/* cli.b  --  command line interface utils
  *
  * Copyright (C) 2013 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.

@@ -1,4 +1,4 @@
-/* scanner.c  --  code for converting preprocessor tokens to C ones
+/* scanner.b  --  code for converting preprocessor tokens to C ones
  *
  * Copyright (C) 2013, 2014 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.
@@ -97,18 +97,8 @@ prgm_direct(stream) {
     tok = get_word(stream, c);
     str = node_str(tok);
     
-    /* We only know about #pragma RBC compatibility */
-    if ( strcmp( str, "compatibility" ) == 0 ) {
-        extern compat_flag;
-        auto int n = pp_dir_num(stream);
-        if ( n < 4 || n > 5 )
-            error("Compatibility with stage %d not supported", n);
-        compat_flag = ( n == 4 );
-    }
-    else {
-        warning("Unhandled #pragma RBC %s", str);
-        pp_slurp(stream, 0, 0);
-    }
+    warning("Unhandled #pragma RBC %s", str);
+    pp_slurp(stream, 0, 0);
 
     end_ppdir(stream, "pragma RBC");
     free_node(tok);

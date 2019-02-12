@@ -4,9 +4,6 @@
  * All rights reserved.
  */ 
 
-/* The Makefile sticks --compatibility=4 on the command line.  Remove it. */
-#pragma RBC compatibility 5 
-
 #include <stdio.h> 
 
 usage() {

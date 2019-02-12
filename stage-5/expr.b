@@ -1,4 +1,4 @@
-/* expr.c  --  code to parse expressions
+/* expr.b  --  code to parse expressions
  *
  * Copyright (C) 2013, 2014 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.

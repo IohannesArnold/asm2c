@@ -1,4 +1,4 @@
-/* i386.c  --  i386 specific code
+/* i386.b  --  i386 specific code
  *
  * Copyright (C) 2013 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.

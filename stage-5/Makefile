@@ -42,29 +42,29 @@ $(INIT):
 %.o:	%.s $(AS)
 	$(AS) $<
 
-%0.s:	%.c $(BUILD)/bc
+%0.s:	%.b $(BUILD)/bc
 	$(BUILD)/bc -S -o $@ $<
 
-# The --compatibility=4 flag enables compatibility with the stage-4 bc.
-%1.s:	%.c $(BUILD)/ccx0
-	$(BUILD)/ccx0 --compatibility=4 -o $@ $<
+%1.s:	%.b $(BUILD)/ccx0
+	$(BUILD)/ccx0 -o $@ $<
 
-# We cannot remove --compatibility=4 on this build, because of the untyped
-# use of structs-as-arrays in the code.  They should be coded as structs,
-# but that's not possible because it would be too difficult to add struct 
-# support to the stage-4 cc.
+%1.s:	%.c $(BUILD)/ccx0
+	$(BUILD)/ccx0 -o $@ $<
+
 %2.s:	%.i $(BUILD)/ccx
-	$(BUILD)/ccx --compatibility=4 -o $@ $<
+	$(BUILD)/ccx -o $@ $<
 
 %.i:	%.c $(BUILD)/cpp
 	$(BUILD)/cpp -Iinclude -o $@ $<
 
+%.s:	%.b $(BUILD)/ccx
+	$(BUILD)/ccx -o $@ $<
+
 %.s:	%.c $(BUILD)/ccx
 	$(BUILD)/ccx -o $@ $<
 
-# All these files get compiled with --compatibility=4
 CCX_OBJS  = scanbase.o scanner.o symtab.o expr.o stmt.o type.o \
-            codegen.o i386.o main.o cli.o
+            codegen.o i386.o ccx.o cli.o
 
 # We replace node.o with a new version written using structs (and so that
 # won't compile using stage-4 bc), partly as a test of the stage-4 bc.
@@ -86,13 +86,13 @@ CPP_OBJS = scanbase.o cpp.o nodenew.o macros.o pvector.o cli.o expr.o \
 $(BUILD)/cpp:	$(LD) $(LIBC) $(CRT0) $(CPP_OBJS)
 	$(LD) -o $@ $(CRT0) $(CPP_OBJS) $(LIBC)
 
-CC_OBJS = pvector.o timeconv.o cc.o cli.o
+CC_OBJS = pvector.o timeconv.o cc.o 
 
-$(BUILD)/cc:	$(LD) $(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o)
-	$(LD) -o $@ $(CRT0) $(CC_OBJS:%.o=%2.o) $(LIBC)
+$(BUILD)/cc:	$(LD) $(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) cli.o
+	$(LD) -o $@ $(CRT0) $(CC_OBJS:%.o=%2.o) cli.o $(LIBC)
 
-$(BUILD)/cmp:	$(BUILD)/cc cmp.c cli.c
-	cd $(BUILD) && ./cc -o $@ ../stage-5/cmp.c ../stage-5/cli.c
+$(BUILD)/cmp:	$(BUILD)/cc cmp.c cli.b
+	cd $(BUILD) && ./cc -o $@ ../stage-5/cmp.c ../stage-5/cli.b
 
 .INTERMEDIATE:  $(CCX0_OBJS:%.o=%0.o) $(CCX1_OBJS:%.o=%1.o) \
                 $(CCX1_OBJS:%.o=%.s) $(CCX1_OBJS) $(CPP_OBJS) $(CC_OBJS)
@@ -114,11 +114,11 @@ check-cmp: $(BUILD)/ccx2 $(BUILD)/cc2 $(BUILD)/cmp
 
 # Build ccx2 and cc2 with a single command.  This is a good test of the 
 # driver logic.
-$(BUILD)/ccx2:	$(BUILD)/cc $(CCX1_OBJS:%.o=%.c)
-	cd $(BUILD) && ./cc -o ccx2 --compatibility=4 $(addprefix ../stage-5/,$(CCX1_OBJS:%.o=%.c))
+$(BUILD)/ccx2:	$(BUILD)/cc $(CCX_OBJS:%.o=%.b) nodenew.c
+	cd $(BUILD) && ./cc -o ccx2 $(addprefix ../stage-5/,$(CCX_OBJS:%.o=%.b) nodenew.c)
 
-$(BUILD)/cc2:	$(BUILD)/cc $(BUILD)/ccx2 $(CC_OBJS:%.o=%.c)
-	cd $(BUILD) && ./cc -o cc2 --with-ccx=ccx2 -I ../stage-5 $(addprefix ../stage-5/,$(CC_OBJS:%.o=%.c))
+$(BUILD)/cc2:	$(BUILD)/cc $(BUILD)/ccx2 $(CC_OBJS:%.o=%.c) cli.b
+	cd $(BUILD) && ./cc -o cc2 --with-ccx=ccx2 -I ../stage-5 $(addprefix ../stage-5/,$(CC_OBJS:%.o=%.c) cli.b)
 
 check:	check-cmp
 	$(MAKE) -r -C cpp-tests $@

@@ -4,9 +4,6 @@
  * All rights reserved.
  */ 
 
-/* The Makefile sticks --compatibility=4 on the command line.  Remove it. */
-#pragma RBC compatibility 5 
-
 #include <time.h>
 #include "pvector.h"
 
@@ -64,10 +61,6 @@ parse_args(argc, argv)
                 "Multiple output files specified: '%s' and '%s'\n",
                 o_name, arg2 );
             o_name = arg2;
-        }
-
-        else if ( arg2 = opt_arg( argv, argc, &i, "--compatibility" ) ) {
-            pvec_push( cc_args, arg ); ++i;
         }
 
         else if ( strcmp( arg, "--nostdlib" ) == 0 ) {
@@ -154,10 +147,10 @@ compile(argc, argv)
     while ( ++i < argc && !fail ) {
         char *arg = argv[i];
         int l = strlen(arg);
-        if ( arg[0] != '-' && l > 2 && (arg[l-1] == 'c' || arg[l-1] == 'i') 
-               && arg[l-2] == '.' ) {
+        if ( arg[0] != '-' && l > 2 && (arg[l-1] == 'c' || arg[l-1] == 'i' 
+               || arg[l-1] == 'b') && arg[l-2] == '.' ) {
             char *iname = strdup(arg);
-            iname[l-1] = 'i';
+            if (iname[l-1] == 'c') iname[l-1] = 'i';
 
             if ( o_name && last_stage == 2 ) {
                 pvec_push( cc_args, "-o" );
@@ -196,7 +189,7 @@ assemble(argc, argv)
         char *arg = argv[i];
         int l = strlen(arg);
         if ( arg[0] != '-' && l > 2 && (arg[l-1] == 'c' || arg[l-1] == 'i' 
-               || arg[l-1] == 's') && arg[l-2] == '.' ) {
+               || arg[l-1] == 'b' || arg[l-1] == 's') && arg[l-2] == '.' ) {
             char *iname = strdup(arg);
             iname[l-1] = 's';
 
@@ -249,7 +242,8 @@ link(argc, argv)
         char *arg = argv[i];
         int l = strlen(arg);
         if ( arg[0] != '-' && l > 2 && (arg[l-1] == 'c' || arg[l-1] == 'i' 
-               || arg[l-1] == 's' || arg[l-1]== 'o') && arg[l-2] == '.' ) {
+               || arg[l-1] == 'b' || arg[l-1] == 's' || arg[l-1]== 'o')
+               && arg[l-2] == '.' ) {
             char *iname = strdup(arg);
             iname[l-1] = 'o';
             pvec_push( ld_args, iname );

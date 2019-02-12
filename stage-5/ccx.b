@@ -1,10 +1,13 @@
-/* main.c  --  code to parse command line and initialise the compiler
+/* cxx.b  --  code to parse command line and initialise the compiler
  *
  * Copyright (C) 2013 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.
  */
 
-/* Is the --compatibility=4 flag given? */
+/* 
+ * Global flag for whether we are compiling the stage-4 B language 
+ * or the stage-5 C language
+ */
 compat_flag = 0;
 
 static
@@ -17,7 +20,7 @@ compile(output) {
 }
 
 usage() {
-    cli_error("Usage: ccx [--compatibility=N] [-o filename.s] filename.c\n");
+    cli_error("Usage: ccx [-o filename.s] filename\n");
 }
 
 main(argc, argv) 
@@ -45,13 +48,6 @@ main(argc, argv)
         else if ( strcmp( arg, "--help" ) == 0 ) 
             usage();
 
-        else if ( arg2 = opt_arg( argv, argc, &i, "--compatibility" ) ) {
-            if ( strcmp( arg2, "4" ) == 0 )
-                compat_flag = 1;
-            else if ( strcmp( arg2, "5" ) != 0 )
-                cli_error("Compatibility with stage %s not supported", arg2);
-        }
-
         else if ( rchar(argv[i], 0) == '-' )
             cli_error("cc: unknown option: %s\n", argv[i]);
 
@@ -71,13 +67,17 @@ main(argc, argv)
     init_symtab();
     init_scan(filename, 0); 
 
-    if (!outname) {
-        /* We allow .c or .i filenames: .i is used for preprocessed source. */
-        l = strlen(filename);
-        if ( rchar( filename, l-1 ) != 'c' && rchar( filename, l-1 ) != 'i'
-             || rchar( filename, l-2 ) != '.' )
-            cli_error("cc: input filename must have .c extension\n");
+    /* We allow .c, .b .i filenames: .i is used for preprocessed source. */
+    l = strlen(filename);
+    if ( rchar( filename, l-1 ) != 'c' && rchar( filename, l-1 ) != 'i'
+         && rchar( filename, l-1 ) != 'b' || rchar( filename, l-2 ) != '.' )
+        cli_error("cc: input filename has wrong extension\n");
 
+    if ( rchar( filename, l-1 ) == 'b') {
+	    compat_flag = 1;
+    }
+
+    if (!outname) {
         outname = strdup( filename );
         freeout = 1;
         lchar( outname, l-1, 's' );

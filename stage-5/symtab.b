@@ -1,4 +1,4 @@
-/* symtab.c  --  code to manipulate the symbol table
+/* symtab.b  --  code to manipulate the symbol table
  *
  * Copyright (C) 2013 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.

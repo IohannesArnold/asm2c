@@ -1,4 +1,4 @@
-/* codegen.c  --  code generation pass
+/* codegen.b  --  code generation pass
  *
  * Copyright (C) 2013, 2014 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.

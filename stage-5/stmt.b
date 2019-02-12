@@ -1,4 +1,4 @@
-/* stmt.c  --  code to parse statements
+/* stmt.b  --  code to parse statements
  *
  * Copyright (C) 2013, 2014 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.

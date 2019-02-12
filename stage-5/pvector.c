@@ -4,9 +4,6 @@
  * All rights reserved.
  */ 
 
-/* The Makefile sticks --compatibility=4 on the command line.  Remove it. */
-#pragma RBC compatibility 5 
-
 /* We would like to #include "pvector.h" here, but we don't so that it can
  * be used in the implementation of the preprocessor.  Instead, repeat the
  * definition here. */

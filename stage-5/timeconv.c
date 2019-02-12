@@ -1,11 +1,8 @@
-/* cc.c  --  functions to convert times
+/* timeconv.c  --  functions to convert times
  *  
  * Copyright (C) 2014 Richard Smith <richard@ex-parrot.com>
  * All rights reserved.
  */ 
-
-/* The Makefile sticks --compatibility=4 on the command line.  Remove it. */
-#pragma RBC compatibility 5 
 
 #include <bits/struct_tm.h>
 

@@ -28,19 +28,9 @@ The compiler is named ccx.
   Options:
     --help              Displays the help text
     -o FILENAME         Specifies the output file name
-    --compatibility=N   Sets compatibility with the stage N tools
 
 If no -o option is specified, the input file has a .c or .i extension,
 the output is the same file name but with a .s extension.  
-
-The --compatibility=4 flag enables compatibility with the stage 4
-compiler.  This will permit arbitrary assignment to implicit int (but
-not any variable with a declared type).  It will give an error when
-subscripting something other than an array of 4-byte objects; most
-commonly this triggers with character arrays which had to be manipulated
-with lchar and rchar in stage 4.  An error is also given when doing
-pointer arithmetic on objects that are not single bytes. 
-
 
 The new C-like compiler is used to implement a simple preprocessor, cpp,
 which is almost entirely compliant with the C90 standard.  (The only
@@ -73,7 +63,6 @@ use of the four build tools (cpp, ccx, as and ld).
     -c                  Halt after assembling, generating .o files
     -I DIRECTORY        Appends a directory to the header search path
     -D NAME[=VAL]       Pre-defines a macro, optionally with a value
-    --compatibility=N   Sets compatibility with the stage N tools
     --nostdlib          Do not link against crt0.o and libc.o
     --with-cpp=PROGRAM  Use the specified program as the preprocessor
     --with-ccx=PROGRAM  Use the specified program as the compiler
