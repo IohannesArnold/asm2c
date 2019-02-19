@@ -97,6 +97,9 @@ type_size(type) {
     else if ( t == 'stru' )
         return struct_size( &type[3][3] );
 
+    else if ( t == 'unio' )
+        return struct_size( &type[3][3] );
+
     else int_error( "Cannot determine size of unknown type: %Mc", type[0] );
 }
 
@@ -259,7 +262,7 @@ chk_member(node) {
         type1 = type1[3];
     }
 
-    if ( type1[0] != 'stru' )
+    if ( type1[0] != 'stru' && type1[0] != 'unio')
         error( "Attempted member access of a non-struct type: %Mc", type1[0] );
     if ( type1[3][0] != 'id' )
         int_error("Struct name is not an identifier");

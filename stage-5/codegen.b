@@ -620,6 +620,17 @@ struct_decl(stream, decl) {
     zero_direct( stream, sz );
 }
 
+static
+union_decl(stream, decl) {
+    auto name = &decl[4][3], init = decl[5], sz = type_size( decl[2] );
+
+    if ( init )
+        int_error("Struct initialiser not supported");
+
+    data_decl( stream, name );
+    zero_direct( stream, sz );
+}
+
 /* This is only callled on top-level declarations */
 codegen(stream, node) {
     auto decls = node, i = 2;
@@ -648,6 +659,8 @@ codegen(stream, node) {
                 array_decl( stream, decl );
             else if (type[0] == 'stru')
                 struct_decl( stream, decl );
+            else if (type[0] == 'unio')
+                union_decl( stream, decl );
             else 
                 int_error("Unexpected node in declaration %Mc", type[0]);
         }

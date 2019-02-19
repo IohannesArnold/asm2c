@@ -305,7 +305,7 @@ is_dclspec() {
 
     return t == 'stat' || t == 'exte' || t == 'auto' || t == 'regi' ||
          t == 'char' || t == 'int' || t == 'shor' || t == 'long' ||
-         t == 'sign' || t == 'unsi' || t == 'stru';
+         t == 'sign' || t == 'unsi' || t == 'stru' || t == 'unio';
 }
 
 static
@@ -357,10 +357,45 @@ struct_spec() {
     return stru;
 }
 
+/*  Parse a union tag or union declaration.
+ *
+ *  union-spec  ::= 'union' ( name | name? '{' union-decl-list '}' )
+ */
+static
+union_spec() {
+    /* Struct node has one op:  unio[3] = name */
+    auto unio = take_node(1), t;
+
+    if ( peek_token() != 'id' )
+        error("Expected a tag name in union declaration");
+    unio[3] = take_node(0);
+    t = peek_token();
+    save_tag( &unio[3][3], t == '{' );
+
+    if ( t == '{' ) {
+        skip_node('{');
+        t = peek_token();
+        if ( peek_token() == '}' )
+            error("Empty unions are not allowed");
+
+        /* We have defined the union members inside the declaration() 
+         * function, so there's nothing further to do here. */
+        do free_node( declaration( 0, unio ) );
+        while ( peek_token() != '}' );
+
+        skip_node('}');
+
+        /* Mark the type complete. */
+        seal_tag( &unio[3][3] );
+    }
+
+    return unio;
+}
+
 /*  Parse a list of declaration specifiers, and return them in a 'dcls' node.
  *  Errors are given for invalid combinations.
  * 
- *  decl-specs   ::= ( storage-spec | type-spec | struct-spec )*
+ *  decl-specs   ::= ( storage-spec | type-spec | struct-spec | union-spec )*
  *  storage-spec ::= 'extern' | 'static' | 'auto' | 'register' | 'typedef'
  *  type-spec    ::= 'int' | 'char' | 'long' | 'short' | 'signed' | 'unsigned'
  *                      | typedef-name
@@ -397,6 +432,14 @@ decl_specs() {
                 error("Invalid combination of type specifiers");
 
             decls[4] = struct_spec();
+        }
+
+        else if ( t == 'unio' ) {
+            /* 'int union s' is never allowed. */
+            if (decls[4])
+                error("Invalid combination of type specifiers");
+
+            decls[4] = union_spec();
         }
 
         else if ( t == 'char' || t == 'int' )
@@ -471,8 +514,8 @@ declaration( fn, strct ) {
     if ( fn && decls[3] && decls[3][0] == 'stat' )
         error("Block-scope statics are not supported");
 
-    /* Struct declarations needn't have declarators. */
-    if ( !strct && peek_token() == ';' && decls[4][0] == 'stru' )
+    /* Struct and union declarations needn't have declarators. */
+    if ( !strct && peek_token() == ';' && (decls[4][0] == 'stru' || decls[4][0] == 'unio' ))
         /* stage-4 cc doesn't have goto, so use a sneaky else 
          * clause to get us to the skip_node(';') call. */ 
         ;
