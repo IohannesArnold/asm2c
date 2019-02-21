@@ -21,7 +21,7 @@ chk_keyword(node)
          * 'do' and 'if' have an extra NUL character to pad them to 4 bytes
          * for casting to an int (i.e. a multicharacter literal). 
          *
-         * TODO: Not yet implemented: double, union. 
+         * TODO: Not yet implemented: double 
          */
         "auto", "break", "case", "char", "continue", "default", "do\0", 
         "double", "else", "extern", "float", "for", "goto", "if\0", 

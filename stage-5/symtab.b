@@ -171,7 +171,7 @@ save_tag( name, is_defn ) {
 }
 
 /* Save a member */
-decl_mem( struct_name, decl ) {
+decl_mem( struct_name, decl, is_union) {
     auto *e = lookup_tab( structtab, 32, struct_name ); 
         /* sizeof(struct_entry) */
 
@@ -180,8 +180,14 @@ decl_mem( struct_name, decl ) {
 
     /* TODO:  We need to pack members a bit better than this.
      * { char a, b, c; }  has size 4, not 12. */
-    save_sym( &e[5], decl, e[1], 0 );
-    e[1] += promote_sz( type_size( decl[2] ) );
+    auto item_size = promote_sz( type_size( decl[2] ) );
+    if (is_union) {
+        save_sym( &e[5], decl, 0, 0 );
+	if (item_size > e[1]) e[1] = item_size;
+    } else {
+        save_sym( &e[5], decl, e[1], 0 );
+        e[1] += item_size;
+    }
 }
 
 /* Seal the struct preventing new members from being entered, and

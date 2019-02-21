@@ -84,7 +84,7 @@ TODO:
   - Errors on duplicate declarations at global scope
   - Tentative definitions
   - Prototypes
-  - Unions, bit fields (probably not in this stage?), floats
+  - Bit fields (probably not in this stage?), floats
   - n1062 #scopes?
   - #pragma once?
   - Use temporary file names in driver

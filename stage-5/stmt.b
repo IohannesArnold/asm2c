@@ -571,7 +571,7 @@ declaration( fn, strct ) {
             if ( decl[2][0] == '()' )
                 error("Function declarations not permitted as struct members");
 
-            decl_mem( &strct[3][3], decl );
+            decl_mem( &strct[3][3], decl, strct[0] == 'unio');
         }
 
         /* Handle function definitions: is_dclpsec() matches a K&R parameter
