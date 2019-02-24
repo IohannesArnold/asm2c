@@ -139,7 +139,7 @@ case_stmt( fn, loop, swtch ) {
     /* Append the case label to the switch table so it can do the forward
      * jump.  Note this is a duplicate reference of the case label, hence
      * calling add_ref(). */
-    swtch[5] = vnode_app( swtch[4], add_ref(node) );
+    swtch[5] = vnode_app( swtch[5], add_ref(node) );
 
     skip_node(':');
     node[4] = stmt( fn, loop, swtch );
