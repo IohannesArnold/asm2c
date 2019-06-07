@@ -414,7 +414,7 @@ set_line( line_ptr, file_ptr, output )
         if (*file_ptr) fputc('\n', output);
         /* TODO:  Properly escape the filename. */
         if ( !opt_P )
-            fprintf( output, "#line %d \"%s\"\n", in_line, in_file );
+            fprintf( output, "#line %d\n", in_line, in_file );
         *line_ptr = in_line;
         *file_ptr = in_file;
     }
