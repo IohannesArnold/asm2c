@@ -1,12 +1,12 @@
 SHELL = /bin/sh
 
-CP    = /bin/cp
-RM    = /bin/rm
-CHMOD = /bin/chmod
-CMP   = /usr/bin/cmp
-SED   = /usr/bin/sed
-PRINTF= /usr/bin/printf
-MAKE  = /usr/bin/make
+CP    = $(shell which cp)
+RM    = $(shell which rm)
+CHMOD = $(shell which chmod)
+CMP   = $(shell which cmp)
+SED   = $(shell which sed)
+PRINTF= $(shell which printf)
+MAKE  = $(shell which make)
 
 # The build directory
 BUILD = ../bin
