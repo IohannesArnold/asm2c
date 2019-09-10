@@ -1,5 +1,5 @@
 language: minimal
 install: true
-before_script: mkdir ./bin
+before_script: mkdir ./build
 script: make
 

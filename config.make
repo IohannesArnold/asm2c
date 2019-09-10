@@ -9,5 +9,5 @@ PRINTF= $(shell which printf)
 MAKE  = $(shell which make)
 
 # The build directory
-BUILD = ../bin
+BUILD = ../build
 
