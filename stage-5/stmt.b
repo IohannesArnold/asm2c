@@ -727,28 +727,38 @@ block( fn, loop, swtch ) {
     return n;
 }
 
-/*  param-list ::= ( identifier ( ',' identifier )* )? */
+/*  param-list ::= ( decl-specs?  identifier ( ','decl-specs? identifier )* )? */
 static
 param_list() {
     auto  p = new_node('()', 0);
     p = vnode_app( p, 0 );  /* Place holder for return type */
 
-    if ( peek_token() == ')' ) 
+    if ( peek_token() == ')' ) {
         return p;
-
-    while (1) {
-        req_token();
-        if (peek_token() != 'id')
-            error("Expected identifier in function parameter list");
-        p = vnode_app( p, take_node(0) );
-
-        /* It would be easier to code for an optional ',' at the end, but
-         * the standard doesn't allow for that. */
-        req_token();
-        if ( peek_token() == ',' )
+    } else if ( is_dclspec() ) {
+        while (1) {
+            auto pdecls = decl_specs();
+            auto pdecl = declarator(pdecls[4]); 
+            p = vnode_app(p, pdecl);
+            free_node(pdecls);
+            if (peek_token() == ')')
+                break;
             skip_node(',');
-        else if ( peek_token() == ')' )
-            break;
+        }
+    } else {
+        while (1) {
+            req_token();
+            if (peek_token() != 'id')
+                error("Expected identifier in function parameter list");
+            p = vnode_app( p, take_node(0) );
+ 
+            /* It would be easier to code for an optional ',' at the end, but
+             * the standard doesn't allow for that. */
+            req_token();
+            if (peek_token() == ')')
+                break;
+            skip_node(',');
+        }
     }
     return p;
 }
