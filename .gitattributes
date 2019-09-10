@@ -1,0 +1,3 @@
+*.x linguist-language=Assembly
+*.xl linguist-language=Assembly
+*.b linguist-language=C
