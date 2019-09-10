@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
 
-#include <bits/struct_tm.h>
+#include <time.h>
 
 static 
 struct tm buf;

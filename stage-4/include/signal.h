@@ -1,5 +1,5 @@
-/* <bits/eof.h>  --  the EOF value for <stdio.h>
- * Copyright (C) 2005-2019 Richard Smith <richard@ex-parrot.com>
+/* <signal.h>  --  standard C library header 
+ * Copyright (C) 2019 John Arnold
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,17 +13,12 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+ */ 
 
-#ifndef __RBC_BITS_EOF_INCLUDED
-#define __RBC_BITS_EOF_INCLUDED
+#ifndef __SIGNAL_H__
+#define __SIGNAL_H__
 
-/* C90 7.9.1  The definition of the EOF macro.
- * 
- * EOF "expands to a negative integral constant expression that is returned
- * by several functions to indicate end-of-file, that is, no more input from
- * a stream." */ 
-#define EOF (-1)
+int raise(int sig)
+void (*signal(int signum, void (*handler)(int)))(int);
 
 #endif
-

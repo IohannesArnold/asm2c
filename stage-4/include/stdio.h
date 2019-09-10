@@ -15,14 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
 
-#ifndef __RBC_STDIO_INCLUDED
-#define __RBC_STDIO_INCLUDED
+#ifndef __STDIO_H__
+#define __STDIO_H__
 
-#include <bits/size_t.h>
 #include <bits/null.h>
-#include <bits/file.h>
-#include <bits/std_streams.h>
-#include <bits/eof.h>
-#include <bits/file_access.h>
+#include <bits/size_t.h>
+
+#define EOF (-1)
+
+typedef struct __stdio_file_t FILE;
+
+extern FILE *stdin;
+extern FILE *stdout;
+extern FILE *stderr;
+
+#define stdin stdin
+#define stdout stdout
+#define stderr stderr
+
+#define _IOFBF  1  /* Fully buffered */
+#define _IOLBF  2  /* Line buffered */
+#define _IONBF  3  /* Unbuffered */
+#define BUFSIZ  4096
+
+int fclose( FILE* stream );
+int fflush( FILE* stream );
+FILE *fopen( char const* filename, char const* mode );
+FILE *freopen( char const *filename, char const *mode, FILE *stream );
+void setbuf( FILE *stream, char *buf );
+int setvbuf( FILE *stream, char *buf, int mode, size_t size );
 
 #endif

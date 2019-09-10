@@ -1,5 +1,5 @@
-/* <bits/struct_tm.h>  --  the definition of struct tm 
- * Copyright (C) 2014-2019 Richard Smith <richard@ex-parrot.com>
+/* <unistd.h>  --  standard C library header 
+ * Copyright (C) 2019 John Arnold
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,16 +13,19 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+ */ 
 
-#ifndef __RBC_BITS_TIME_T_INCLUDED
-#define __RBC_BITS_TIME_T_INCLUDED
+#ifndef __UNISTD_H__
+#define __UNISTD_H__
+#include <bits/size_t.h>
+typedef signed int ssize_t
 
-/* time_t
- *
- * The C standard simply requires this to be arithmetic, and not necessarily
- * even signed.  The Linux kernel ABI makes it a 32-bit signed type. 
- */
-typedef int time_t;
-
+ssize_t write(int fd, const void *buf, size_t count);
+ssize_t read(int fd, void *buf, size_t count);
+int open(char const* filename, int flags, int mode);
+int close(int fd);
+int dup2(int oldfd, int newfd);
+int execve(char* filename, char* argv[], char* envp[]);
+int fork();
+int unlink(char* filename);
 #endif

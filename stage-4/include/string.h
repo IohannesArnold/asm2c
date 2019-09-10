@@ -1,4 +1,4 @@
-/* <errno.h>  --  standard C library header 
+/* <string.h>  --  standard C library header 
  * Copyright (C) 2019 John Arnold
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -14,8 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
-#ifndef __ERRNO_H__
-#define __ERRNO_H__
 
-extern int errno;
+#ifndef __STRING_H__
+#define __STRING_H__
+
+#include <bits/null.h>
+#include <bits/size_t.h>
+
+size_t strlen(char* s);
+size_t strnlen(char* s, size_t maxlen);
+int strcmp(char const* a, char const* b);
+int strncmp(char const* a, char const* b, size_t n);
+int strchr(char const* a, int c);
+int strcpy(char* dest, char const* str);
+int strncpy(char* dest, char const* str, size_t n);
+char *strcat(char *dest, const char *src);
+char *strdup(const char *s);
+
+int memcpy(char* dest, char const* str, size_t n);
+void* memset(void* s, int c, size_t n);
+void *memmove(void *str1, const void *str2, size_t n);
 #endif
