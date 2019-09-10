@@ -30,9 +30,7 @@ usage() {
 
 extern char* opt_arg();
 
-parse_args(argc, argv)
-    int argc;
-    char **argv;
+parse_args(int argc, char **argv)
 {
     int i = 1;
 
@@ -99,8 +97,7 @@ parse_args(argc, argv)
 }
 
 /* Invoke the command in ARGS.  Return 0 for success or 1 for failure. */
-invoke(args) 
-    struct pvector* args;
+invoke(struct pvector* args) 
 {
     int pid, status;
     if ( ( pid = fork() ) == 0 )
@@ -117,9 +114,7 @@ invoke(args)
     return (status & 0xff7f) ? 1 : 0;
 }
 
-preprocess(argc, argv)
-    int argc;
-    char **argv;
+preprocess(int argc, char **argv)
 {
     int i = 0, fail = 0;
     extern char* strdup();
@@ -148,6 +143,7 @@ preprocess(argc, argv)
     return fail;
 }
 
+//TODO why does this fail if converted to a C89 declaration?
 compile(argc, argv)
     int argc;
     char **argv;
@@ -189,9 +185,7 @@ compile(argc, argv)
     return fail;
 }
 
-assemble(argc, argv)
-    int argc;
-    char **argv;
+assemble(int argc, char **argv)
 {
     int i = 0, fail = 0;
     extern char* strdup();
@@ -232,9 +226,7 @@ assemble(argc, argv)
     return fail;
 }
 
-link(argc, argv)
-    int argc;
-    char **argv;
+link(int argc, char **argv)
 {
     int i = 0, fail = 0;
     struct pvector* free_list = pvec_new();
@@ -276,9 +268,7 @@ static char *months[12] = {
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-main(argc, argv)
-    int argc;
-    char **argv;
+main(int argc, char **argv)
 {
     char** t;
     int res;

@@ -32,8 +32,7 @@ pvec_new() {
     return v;
 }
 
-pvec_delete(v) 
-    struct pvector* v;
+pvec_delete(struct pvector* v) 
 {
     if (v) {
         free( v->start );
@@ -41,9 +40,7 @@ pvec_delete(v)
     }
 }
 
-pvec_push(v, elt)
-    struct pvector* v;
-    char* elt;
+pvec_push(struct pvector* v, char* elt)
 {
     /* Overwrite the null termination: which means we're guaranteed to
      * have space at this point. */
@@ -61,8 +58,7 @@ pvec_push(v, elt)
 }
 
 char* 
-pvec_pop(v) 
-    struct pvector* v;
+pvec_pop(struct pvector* v) 
 {
     char* last = *--v->end;
     *v->end = 0;

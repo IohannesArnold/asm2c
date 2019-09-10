@@ -45,8 +45,7 @@ struct macro_vec {
 } macro_vec;
 
 static
-vec_grow(macro)
-    struct node* macro;
+vec_grow(struct node* macro)
 {
     int sz = macro_vec.end - macro_vec.start;
     if ( macro_vec.end_store == macro_vec.end ) {

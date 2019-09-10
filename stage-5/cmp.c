@@ -21,9 +21,7 @@ usage() {
     cli_error("Usage: cmp [-s] file1 file2\n");
 }
 
-main(argc, argv) 
-    int argc;
-    char **argv;
+main(int argc, char **argv) 
 {
     char *na, *nb;
     FILE *a, *b;

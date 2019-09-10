@@ -36,8 +36,7 @@ static int month_lens[26] = {
 
 /* The C standard gmtime */
 struct tm *
-gmtime(timep) 
-    int *timep;
+gmtime(int *timep) 
 {
     int t = *timep;
     int ly = 0, year = 1970, month = 0, *lp;
