@@ -15,11 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 include ../config.make
+BUILD = ../build
 
-LD = $(BUILD)/ld
-AS = $(BUILD)/as
+LD = $(BUILD)/bin/ld
+AS = $(BUILD)/bin/as
 
-all:	$(BUILD)/bc $(BUILD)/crt0.o $(BUILD)/libc.o $(BUILD)/include
+all:	$(BUILD)/bc $(BUILD)/lib/crt0.o $(BUILD)/lib/libc.o $(BUILD)/include
 
 $(LD) $(AS):
 	$(MAKE) -C ../stage-3
@@ -52,18 +53,18 @@ CC_OBJS  = i386.o scanner.o symtab.o expr.o stmt.o main.o
 $(BUILD)/libc0.o:	$(LD) $(LIB0_OBJS)
 	$(LD) -r -o $(BUILD)/libc0.o $(LIB0_OBJS)
 
-$(BUILD)/crt0.o:	$(AS) crt0.s
+$(BUILD)/lib/crt0.o:	$(AS) crt0.s
 	$(AS) crt0.s
 	$(CP) crt0.o $@
 
-$(BUILD)/bc0:	$(LD) $(BUILD)/libc0.o $(BUILD)/crt0.o $(CC_OBJS)
+$(BUILD)/bc0:	$(LD) $(BUILD)/libc0.o crt0.o $(CC_OBJS)
 	$(LD) -o $(BUILD)/bc0 $(BUILD)/libc0.o crt0.o $(CC_OBJS)
 
-$(BUILD)/libc.o:	$(LD) $(LIB1_OBJS)
-	$(LD) -r -o $(BUILD)/libc.o $(LIB1_OBJS)
+$(BUILD)/lib/libc.o:	$(LD) $(LIB1_OBJS)
+	$(LD) -r -o $@ $(LIB1_OBJS)
 
-$(BUILD)/bc:	$(LD) $(BUILD)/libc.o crt0.o $(CC_OBJS)
-	$(LD) -o $(BUILD)/bc $(BUILD)/libc.o crt0.o $(CC_OBJS)
+$(BUILD)/bc:	$(LD) $(BUILD)/lib/libc.o crt0.o $(CC_OBJS)
+	$(LD) -o $(BUILD)/bc $(BUILD)/lib/libc.o crt0.o $(CC_OBJS)
 
 .INTERMEDIATE:	$(CC_OBJS) $(LIB1_OBJS) $(LIB0_OBJS) libc0.o bc0
 
@@ -72,24 +73,24 @@ $(BUILD)/include:	./include
 
 check:	check-output check-input check-malloc
 
-check-output: $(BUILD)/bc $(BUILD)/as output.b output.o
+check-output: $(BUILD)/bc $(AS) output.b output.o
 	$(CP) output.b output2.b
 	$(BUILD)/bc -S output2.b
-	$(BUILD)/as output2.s
+	$(AS) output2.s
 	$(CMP) output2.o output.o
 	$(RM) output2.b output2.o output2.s
 
-check-input: $(BUILD)/bc $(BUILD)/as input.b input.o
+check-input: $(BUILD)/bc $(AS) input.b input.o
 	$(CP) input.b input2.b
 	$(BUILD)/bc -S input2.b
-	$(BUILD)/as input2.s
+	$(AS) input2.s
 	$(CMP) input2.o input.o
 	$(RM) input2.b input2.o input2.s
 
-check-malloc: $(BUILD)/bc $(BUILD)/as malloc.b malloc.o
+check-malloc: $(BUILD)/bc $(AS) malloc.b malloc.o
 	$(CP) malloc.b malloc2.b
 	$(BUILD)/bc -S malloc2.b
-	$(BUILD)/as malloc2.s
+	$(AS) malloc2.s
 	$(CMP) malloc2.o malloc.o
 	$(RM) malloc2.b malloc2.o malloc2.s
 

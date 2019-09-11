@@ -239,7 +239,7 @@ link(int argc, char **argv)
     }
 
     if ( !nostdlib ) 
-        pvec_push( ld_args, "crt0.o" );
+        pvec_push( ld_args, "../lib/crt0.o" );
 
     while ( ++i < argc ) {
         char *arg = argv[i];
@@ -256,7 +256,7 @@ link(int argc, char **argv)
 
     if ( !nostdlib ) 
         /* This should be -lc, but the stage 3 linker doesn't accept that. */
-        pvec_push( ld_args, "libc.o" );
+        pvec_push( ld_args, "../lib/libc.o" );
 
     fail = invoke( ld_args );
     for ( f = free_list->start; f != free_list->end; ++f ) free(*f);
@@ -285,8 +285,8 @@ main(int argc, char **argv)
     /* The purpose of rbc_init.h is so that neither this compiler driver, 
      * nor the preprocessor, need to be updated when the compiler is updated 
      * to include new functionality. */
-    pvec_push( pp_args, "-Iinclude" );
-    pvec_push( pp_args, "--include=include/rbc_init.h" );
+    pvec_push( pp_args, "-I../include" );
+    pvec_push( pp_args, "--include=../include/rbc_init.h" );
 
     /* Define these standard macros, as they need compiler support. 
      * Other variables, such as __STDC__ probably belong in <rbc_init.h>. */ 
