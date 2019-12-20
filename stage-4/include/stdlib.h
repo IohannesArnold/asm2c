@@ -19,6 +19,10 @@
 #define __STDLIB_H__
 #include <bits/null.h>
 #include <bits/size_t.h>
+
+#define	EXIT_FAILURE	1
+#define	EXIT_SUCCESS	0
+
 int abs(int i);
 
 void* malloc(size_t sz);
