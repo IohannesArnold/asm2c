@@ -315,8 +315,9 @@ is_dclspec() {
     }
 
     return t == 'stat' || t == 'exte' || t == 'auto' || t == 'regi' ||
-         t == 'char' || t == 'int' || t == 'shor' || t == 'long' ||
-         t == 'sign' || t == 'unsi' || t == 'stru' || t == 'unio';
+           t == 'void' || t == 'char' || t == 'int'  || t == 'shor' ||
+           t == 'long' || t == 'sign' || t == 'unsi' ||
+           t == 'stru' || t == 'unio';
 }
 
 static
@@ -408,8 +409,8 @@ union_spec() {
  * 
  *  decl-specs   ::= ( storage-spec | type-spec | struct-spec | union-spec )*
  *  storage-spec ::= 'extern' | 'static' | 'auto' | 'register' | 'typedef'
- *  type-spec    ::= 'int' | 'char' | 'long' | 'short' | 'signed' | 'unsigned'
- *                      | typedef-name
+ *  type-spec    ::= 'void' | 'int' | 'char' | 'long' | 'short' | 'signed' |
+ *                   'unsigned' | typedef-name
  */
 static
 decl_specs() {
@@ -453,7 +454,7 @@ decl_specs() {
             decls[4] = union_spec();
         }
 
-        else if ( t == 'char' || t == 'int' )
+        else if ( t == 'void' || t == 'char' || t == 'int' )
             set_dclt(decls, 3);
         else if ( t == 'shor' || t == 'long' )
             set_dclt(decls, 4);
@@ -486,6 +487,9 @@ decl_specs() {
 
     if ( decls[4][0] == 'dclt' ) {
         if ( !decls[4][3] ) decls[4][3] = new_node('int', 0);
+
+        if ( decls[4][3][0] == 'void' && ( decls[4][4] || decls[4][5] ))
+	    error("Invalid combination of type specifiers");
        
         if ( decls[4][3][0] == 'char' && decls[4][4] )
             error("Invalid combination of type specifiers");
@@ -536,6 +540,9 @@ declaration( fn, strct ) {
         if ( !decl[4] ) error("Declarator does not declare anything");
         name = &decl[4][3];
 
+	if ( decls[4][3][0] == 'void' && decl[2][0] != '*' )
+	    error("Variable has incomplete type 'void'");
+	
         /* Store storage specifier: particularly important for 'register'
          * so we can check it when taking the address of an identifier. */
         if ( decls[3] )
@@ -727,7 +734,7 @@ block( fn, loop, swtch ) {
     return n;
 }
 
-/*  param-list ::= ( decl-specs?  identifier ( ','decl-specs? identifier )* )? */
+/*  param-list ::= ( decl-specs declarator? ( ',' decl-specs declarator? )* )? */
 static
 param_list() {
     auto  p = new_node('()', 0);
@@ -735,30 +742,34 @@ param_list() {
 
     if ( peek_token() == ')' ) {
         return p;
-    } else if ( is_dclspec() ) {
-        while (1) {
-            auto pdecls = decl_specs();
-            auto pdecl = declarator(pdecls[4]); 
-            p = vnode_app(p, pdecl);
-            free_node(pdecls);
-            if (peek_token() == ')')
-                break;
-            skip_node(',');
-        }
-    } else {
-        while (1) {
-            req_token();
-            if (peek_token() != 'id')
-                error("Expected identifier in function parameter list");
-            p = vnode_app( p, take_node(0) );
- 
-            /* It would be easier to code for an optional ',' at the end, but
-             * the standard doesn't allow for that. */
-            req_token();
-            if (peek_token() == ')')
-                break;
-            skip_node(',');
-        }
+    }
+    while (1) {
+        auto pdecls = decl_specs();
+	auto pdecl = declarator(pdecls[4]);
+
+	if ( !pdecl[4] ) {
+	    if ( pdecls[4][3][0] != 'void' ) {
+                error("Parameter name omitted");
+	    } else {
+		if (p[1] != 1 || peek_token() != ')')
+                    error("'void' must be the only parameter");
+
+		/* TODO: This doesn't use void, just throws it away */
+	        free_node(pdecl);
+	    }
+	} else {
+	    if ( pdecls[4][3][0] == 'void' )
+                error("Parameter has incomplete type 'void'");
+
+	    p = vnode_app(p, pdecl);
+	}
+	free_node(pdecls);
+
+	/* It would be easier to code for an optional ',' at the end, but
+	 * the standard doesn't allow for that. */
+	if (peek_token() == ')')
+	    break;
+	skip_node(',');
     }
     return p;
 }
@@ -770,15 +781,14 @@ replc_param( fn_decl, pdecl ) {
     auto i = 1;
     
     while ( i < fn_decl[1] ) {
-        auto n = fn_decl[ 3 + i ], name;
+        auto old_decl = fn_decl[3+i];
 
-        if ( n[0] == 'id' ) name = n;
-        else if ( n[0] == 'decl' ) name = n[4];
-        else int_error("Unexpected node in parameter list");
+        if ( old_decl[0] != 'decl' )
+            int_error("Unexpected node in parameter list");
 
-        if ( strcmp( &name[3], &pdecl[4][3] ) == 0 ) {
-            if ( n[0] == 'decl' ) 
-                error("Multiple declarations for parameter '%s'", &name[3]);
+        if ( strcmp( &old_decl[4][3], &pdecl[4][3] ) == 0 ) {
+            if ( old_decl[2] != implct_int() ) 
+                error("Multiple declarations for parameter '%s'", &old_decl[4][3]);
             free_node( fn_decl[3+i] );
             fn_decl[3+i] = pdecl;
             return;
@@ -788,28 +798,6 @@ replc_param( fn_decl, pdecl ) {
     }
 
     error("No parameter called '%s'", &pdecl[4][3]);
-}
-
-/* Scan through FN_DECL for any undeclared parameters, and give implicit int
- * declarations to them. */
-static
-fini_params( fn_decl ) {
-    auto i = 1;
-
-    while ( i < fn_decl[1] ) {
-        auto n = fn_decl[3+i];
-
-        if ( n[0] == 'id' ) {
-            auto decl = new_node('decl', 3);
-            decl[2] = add_ref( implct_int() );
-            /* operands are: type, name, init (which is null here). */
-            decl[3] = add_ref( implct_int() );
-            decl[4] = n;
-            fn_decl[3+i] = decl;
-        }
-
-        ++i;
-    }
 }
 
 /* Handle K&R style parameter declarations */
@@ -842,7 +830,6 @@ knr_params( decl ) {
         skip_node(';');
         free_node(pdecls);
     }
-    fini_params( decl[2] );
 }
 
 static

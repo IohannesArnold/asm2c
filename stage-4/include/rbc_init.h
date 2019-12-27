@@ -21,5 +21,4 @@
 
 /* To allow headers in this stage to be used later, it's convenient to
  * allow some extra keywords to appear in them. */
-#define void int
 #define const
