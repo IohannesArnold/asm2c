@@ -75,10 +75,8 @@ not to require preprocessing; a .s file is assumed to be in assembly;
 and a .o file is assumed to be an object file.
 
 The compiler driver instructs the preprocessor to search the include/
-directory and prepend include=include/rbc_init.h (which currently only
-defines the version number in __RBC_INIT).  The __DATE__ and __TIME__
-macros are also defined by the driver and passed to the preprocessor via
-the command line.
+directory.  The __DATE__ and __TIME__ macros are also defined by the 
+driver and passed to the preprocessor viathe command line.
 
 TODO:
   - Errors on duplicate declarations at global scope

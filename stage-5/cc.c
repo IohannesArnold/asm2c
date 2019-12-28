@@ -282,14 +282,9 @@ main(int argc, char **argv)
     as_args = pvec_new(); pvec_push( as_args, "as" ); 
     ld_args = pvec_new(); pvec_push( ld_args, "ld" ); 
 
-    /* The purpose of rbc_init.h is so that neither this compiler driver, 
-     * nor the preprocessor, need to be updated when the compiler is updated 
-     * to include new functionality. */
     pvec_push( pp_args, "-I../include" );
-    pvec_push( pp_args, "--include=../include/rbc_init.h" );
 
-    /* Define these standard macros, as they need compiler support. 
-     * Other variables, such as __STDC__ probably belong in <rbc_init.h>. */ 
+    /* Define these standard macros, as they need compiler support. */ 
     snprintf(buf1, 32, "-D__DATE__=\"%3s %2d %4d\"", 
              months[tm->tm_mon], tm->tm_mday, tm->tm_year+1900);
     snprintf(buf2, 32, "-D__TIME__=\"%02d:%02d:%02d\"", 

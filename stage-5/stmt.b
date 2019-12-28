@@ -427,14 +427,14 @@ is_dclspec() {
 
     return t == 'stat' || t == 'exte' || t == 'auto' || t == 'regi' ||
            t == 'void' || t == 'char' || t == 'int'  || t == 'shor' ||
-           t == 'long' || t == 'sign' || t == 'unsi' ||
-           t == 'stru' || t == 'unio';
+           t == 'long' || t == 'sign' || t == 'unsi' || t == 'enum' ||
+           t == 'stru' || t == 'unio' || t == 'cons' || t == 'vola';
 }
 
 static
 set_dclt(decls, field) {
     if (!decls[4])
-        decls[4] = new_node('dclt', 3);
+        decls[4] = new_node('dclt', 4);
 
     else if ( decls[4][0] != 'dclt' )
         error("Invalid combination of type specifiers");
@@ -509,7 +509,7 @@ struct_spec() {
 /*  Parse a list of declaration specifiers, and return them in a 'dcls' node.
  *  Errors are given for invalid combinations.
  * 
- *  decl-specs   ::= ( storage-spec | type-spec | struct-spec )*
+ *  decl-specs   ::= ( storage-spec | type-spec | struct-spec | enum-spec )*
  *  storage-spec ::= 'extern' | 'static' | 'auto' | 'register' | 'typedef'
  *  type-spec    ::= 'void' | 'int' | 'char' | 'long' | 'short' | 'signed' |
  *                   'unsigned' | typedef-name
@@ -527,7 +527,8 @@ decl_specs() {
      * set_dclt(), has ops:
      *   dclt[3] = base of the type   { char, int }    --- always present
      *   dclt[4] = length modifier    { long, short }
-     *   dclt[5] = signed modifier    { signed, unsigned }  */
+     *   dclt[5] = signed modifier    { signed, unsigned }
+     *   dclt[6] = qualifier modifier { constant, volatile }  */
 
     while (1) {
         auto t = peek_token();
@@ -548,12 +549,24 @@ decl_specs() {
             decls[4] = struct_spec();
         }
 
+        else if ( t == 'enum' ) {
+	    int_error("Enums not yet implemented");
+            /* 'int enum s' is never allowed. */
+            if (decls[4])
+                error("Invalid combination of type specifiers");
+
+        }
         else if ( t == 'void' || t == 'char' || t == 'int' )
             set_dclt(decls, 3);
         else if ( t == 'shor' || t == 'long' )
             set_dclt(decls, 4);
         else if ( t == 'sign' || t == 'unsi' )
             set_dclt(decls, 5);
+
+	/* TODO: implement type qualifiers.
+	 * These nodes just sit here and don't do anything. */
+        else if ( t == 'cons' || t == 'vola' )
+            set_dclt(decls, 6);
 
         /* Typedefs are a bit tricky, because a typedef-name only interpretted
          * as a type-spec if there isn't already a type-spec. */
@@ -631,7 +644,7 @@ declaration(fn) {
 	    error("Declarator does not declare anything");
         name = &decl[4][3];
 
-	if ( decls[4][3][0] == 'void' && decl[2][0] != '*' )
+	if (decls[4][3][0] == 'void' && decl[2][0] != '*' && decl[2][0] != '()')
 	    error("Variable has incomplete type 'void'");
 	
         /* Store storage specifier: particularly important for 'register'
