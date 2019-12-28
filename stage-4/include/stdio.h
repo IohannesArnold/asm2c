@@ -44,5 +44,13 @@ FILE *fopen( char const* filename, char const* mode );
 FILE *freopen( char const *filename, char const *mode, FILE *stream );
 void setbuf( FILE *stream, char *buf );
 int setvbuf( FILE *stream, char *buf, int mode, size_t size );
+size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+int fputs(const char *str, FILE *stream);
+int puts(const char *str);
+int fputc(int c, FILE *stream);
+int putc(int c, FILE *stream);
+int putchar(int c);
+
+
 
 #endif

@@ -29,6 +29,7 @@ void* malloc(size_t sz);
 void free(void* ptr);
 void* realloc(void* ptr, size_t sz);
 
+void exit(int status);
 void abort(void);
 
 #endif
