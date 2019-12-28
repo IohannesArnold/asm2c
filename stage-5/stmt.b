@@ -206,6 +206,77 @@ init_array( type, req_const ) {
     return init;
 }
 
+/* block ::= '{' ( statement | declaration )* '}' */
+block( fn, loop, swtch ) {
+    auto block = new_node('{}', 0), sd;
+
+    start_block();
+    skip_node('{');
+
+    while ( peek_token() != '}' ) {
+	if ( is_dclspec() )
+	    block = vnode_app(block, declaration(fn));
+	else
+	    block = vnode_app(block, stmt(fn, loop, swtch));
+    }
+
+    end_block();
+    skip_node('}');
+
+    return block;
+}
+
+/* label-stmt ::= identifier ':' stmt */
+static
+label_stmt( fn, loop, swtch ) {
+    auto label, name = take_node(0);
+
+    if (peek_token() != ':')
+        int_error("Unexpected token '%Mc' found ending label", peek_token());
+    label = take_node(2);
+    label[3] = name;
+    label[4] = stmt( fn, loop, swtch );
+
+    save_label( &name[3], 1 );
+
+    return label;
+}
+
+static
+stmt( fn, loop, swtch ) {
+    auto t;
+    req_token();
+    t = peek_token();
+
+    if      (t == '{'   ) return block( fn, loop, swtch );
+    else if (t == 'if'  ) return if_stmt( fn, loop, swtch );
+    else if (t == 'do'  ) return do_stmt( fn, swtch );
+    else if (t == 'whil') return while_stmt( fn, swtch );
+    else if (t == 'for' ) return for_stmt( fn, swtch );
+    else if (t == 'swit') return switch_stmt( fn, loop );
+    else if (t == 'goto') return goto_stmt();
+    else if (t == 'retu') return return_stmt();
+    else if (t == 'brea') return break_stmt( loop, swtch );
+    else if (t == 'cont') return cont_stmt( loop );
+    else if (t == 'case' 
+          || t == 'defa') return case_stmt( fn, loop, swtch );
+
+    else if (t == 'id') {
+        /* We either have a labelled statement or we have a (possibly null)
+         * expression statement.  Both can start with an identifier, so
+         * we use peek_token() to look at the following token.
+         * This works because the only use of : is in label or the second
+         * part of a ternary, and we cannot get the ternary use here. */
+        auto id = take_node(0);
+        auto is_label = peek_token() == ':';
+        unget_token(id);
+
+        if (is_label) return label_stmt( fn, loop, swtch );
+        else return expr_stmt();
+    }
+    else return expr_stmt();
+}
+
 /*  primry-decl ::= name | '(' prefix-decl ')' */
 static
 primry_decl(decl, phead) {
@@ -221,6 +292,46 @@ primry_decl(decl, phead) {
     }
 
     return phead;
+}
+
+/*  param-list ::= ( decl-specs declarator? ( ',' decl-specs declarator? )* )? */
+static
+param_list() {
+    auto  p = new_node('()', 0);
+    p = vnode_app( p, 0 );  /* Place holder for return type */
+
+    if ( peek_token() == ')' ) {
+        return p;
+    }
+    while (1) {
+        auto pdecls = decl_specs();
+	auto pdecl = declarator(pdecls[4]);
+
+	if ( !pdecl[4] ) {
+	    if ( pdecls[4][3][0] != 'void' ) {
+                error("Parameter name omitted");
+	    } else {
+		if (p[1] != 1 || peek_token() != ')')
+                    error("'void' must be the only parameter");
+
+		/* TODO: This doesn't use void, just throws it away */
+	        free_node(pdecl);
+	    }
+	} else {
+	    if ( pdecls[4][3][0] == 'void' )
+                error("Parameter has incomplete type 'void'");
+
+	    p = vnode_app(p, pdecl);
+	}
+	free_node(pdecls);
+
+	/* It would be easier to code for an optional ',' at the end, but
+	 * the standard doesn't allow for that. */
+	if (peek_token() == ')')
+	    break;
+	skip_node(',');
+    }
+    return p;
 }
 
 /*  postfx-decl ::= primry-decl ( '[' number ']' | '(' param-list ')' )? */
@@ -398,7 +509,7 @@ struct_spec() {
 /*  Parse a list of declaration specifiers, and return them in a 'dcls' node.
  *  Errors are given for invalid combinations.
  * 
- *  decl-specs   ::= ( storage-spec | type-spec | struct-spec | union-spec )*
+ *  decl-specs   ::= ( storage-spec | type-spec | struct-spec )*
  *  storage-spec ::= 'extern' | 'static' | 'auto' | 'register' | 'typedef'
  *  type-spec    ::= 'void' | 'int' | 'char' | 'long' | 'short' | 'signed' |
  *                   'unsigned' | typedef-name
@@ -429,7 +540,7 @@ decl_specs() {
             decls[3] = take_node(0);
         }
 
-        else if ( t == 'stru' | t == 'unio' ) {
+        else if ( t == 'stru' || t == 'unio' ) {
             /* 'int struct s' is never allowed. */
             if (decls[4])
                 error("Invalid combination of type specifiers");
@@ -487,11 +598,10 @@ decl_specs() {
     return decls;
 }
 
-/*  Parse a declaration inside a function FN, struct STRCT, or at global scope 
- *  (in which case bath FN and STRCT are null); add it to the VNODE 
- *  representing a storage class ('extern' or 'auto'), or a 'dcls' vnode 
- *  if the storage class is implicit.  
- *  Current token is the first token of the declaration, e.g. 'auto'.
+/*  Parse a declaration inside a function FN or at global scope (in which 
+ *  case FN is null); add it to the VNODE representing a storage class 
+ *  ('extern' or 'auto'), or a 'dcls' vnode if the storage class is implicit. 
+ *  Current token is the first token of the declaration, e.g. 'auto', 'int'.
  *
  *  intialiser     ::= init-array | assign-expr
  *  init-decl      ::= declarator ( '=' initialiser )?
@@ -499,11 +609,8 @@ decl_specs() {
  *  declaration    ::= decl-specs ( init-decl-list ';' | declarator block )
  */
 static
-declaration( fn, strct ) {
+declaration(fn) {
     auto decls = decl_specs();
-
-    if ( strct && decls[3] )
-        error("Declartion specifiers are not allowed on struct members");
 
     if ( !fn && decls[3] && ( decls[3][0] == 'auto' || decls[3][0] == 'regi' ) )
         error("Automatic variables are not allowed at file scope");
@@ -513,14 +620,15 @@ declaration( fn, strct ) {
         error("Block-scope statics are not supported");
 
     /* Struct and union declarations needn't have declarators. */
-    if ( !strct && peek_token() == ';' && (decls[4][0] == 'stru' || decls[4][0] == 'unio' ))
-        /* stage-4 cc doesn't have goto, so use a sneaky else 
-         * clause to get us to the skip_node(';') call. */ 
-        ;
+    if (peek_token() == ';' && (decls[4][0] == 'stru' || decls[4][0] == 'unio')){
+        skip_node(';');
+	return decls;
+    }
 
-    else while (1) {
+    while (1) {
         auto decl = declarator(decls[4]), name; 
-        if ( !decl[4] ) error("Declarator does not declare anything");
+        if ( !decl[4] )
+	    error("Declarator does not declare anything");
         name = &decl[4][3];
 
 	if ( decls[4][3][0] == 'void' && decl[2][0] != '*' )
@@ -560,19 +668,11 @@ declaration( fn, strct ) {
         }
 
         /* External declarations still need storing in the symbol table */
-        else if ( !strct ) {
+        else {
             /* TODO:  Check for duplicate definitions at file scope. 
              * This is complicated by tentative definitions. */
             if (fn) chk_dup_sym( name, 1 );
             extern_decl( decl );
-        }
-
-        /* Struct members need storing in the symbol table for the struct */ 
-        else {
-            if ( decl[2][0] == '()' )
-                error("Function declarations not permitted as struct members");
-
-            decl_mem( &strct[3][3], decl, strct[0] == 'unio');
         }
 
         /* Handle function definitions: is_dclpsec() matches a K&R parameter
@@ -608,9 +708,7 @@ declaration( fn, strct ) {
         if ( peek_token() == '=' ) {
             auto type = decl[2];
             skip_node('=');
-            if ( strct ) 
-                error("Initialiser not allowed on struct member");
-            else if ( type && type[0] == '[]' )
+            if ( type && type[0] == '[]' )
                 decl[5] = init_array( type, !fn );
             else if ( type && type[0] == '()' )
                 error("Function declarations cannot have initialiser lists");
@@ -639,122 +737,6 @@ type_name() {
     free_node(decls);
 
     return decl;
-}
-
-/* label-stmt ::= identifier ':' stmt */
-static
-label_stmt( fn, loop, swtch ) {
-    auto label, name = take_node(0);
-
-    if (peek_token() != ':')
-        int_error("Unexpected token '%Mc' found ending label", peek_token());
-    label = take_node(2);
-    label[3] = name;
-    label[4] = stmt( fn, loop, swtch );
-
-    save_label( &name[3], 1 );
-
-    return label;
-}
-
-/*  stmt-or-decl ::= stmt | ( 'auto' | 'extern' ) decl-list */
-static
-stmt_or_dcl( fn, loop, swtch ) {
-    if ( is_dclspec() ) 
-        return declaration( fn, 0 );
-    else
-        return stmt( fn, loop, swtch );
-}
-
-static
-stmt( fn, loop, swtch ) {
-    auto t;
-    req_token();
-    t = peek_token();
-
-    if      (t == '{'   ) return block( fn, loop, swtch );
-    else if (t == 'if'  ) return if_stmt( fn, loop, swtch );
-    else if (t == 'do'  ) return do_stmt( fn, swtch );
-    else if (t == 'whil') return while_stmt( fn, swtch );
-    else if (t == 'for' ) return for_stmt( fn, swtch );
-    else if (t == 'swit') return switch_stmt( fn, loop );
-    else if (t == 'goto') return goto_stmt();
-    else if (t == 'retu') return return_stmt();
-    else if (t == 'brea') return break_stmt( loop, swtch );
-    else if (t == 'cont') return cont_stmt( loop );
-    else if (t == 'case' 
-          || t == 'defa') return case_stmt( fn, loop, swtch );
-
-    else if (t == 'id') {
-        /* We either have a labelled statement or we have a (possibly null)
-         * expression statement.  Both can start with an identifier, so
-         * we use peek_token() to look at the following token.
-         * This works because the only use of : is in label or the second
-         * part of a ternary, and we cannot get the ternary use here. */
-        auto id = take_node(0);
-        auto is_label = peek_token() == ':';
-        unget_token(id);
-
-        if (is_label) return label_stmt( fn, loop, swtch );
-        else return expr_stmt();
-    }
-    else return expr_stmt();
-}
-
-/* block ::= '{' stmt-or-decl* '}' */
-block( fn, loop, swtch ) {
-    auto n = new_node('{}', 0);
-
-    start_block();
-    skip_node('{');
-
-    while ( peek_token() != '}' )
-        n = vnode_app( n, stmt_or_dcl( fn, loop, swtch ) );
-
-    end_block();
-    skip_node('}');
-
-    return n;
-}
-
-/*  param-list ::= ( decl-specs declarator? ( ',' decl-specs declarator? )* )? */
-static
-param_list() {
-    auto  p = new_node('()', 0);
-    p = vnode_app( p, 0 );  /* Place holder for return type */
-
-    if ( peek_token() == ')' ) {
-        return p;
-    }
-    while (1) {
-        auto pdecls = decl_specs();
-	auto pdecl = declarator(pdecls[4]);
-
-	if ( !pdecl[4] ) {
-	    if ( pdecls[4][3][0] != 'void' ) {
-                error("Parameter name omitted");
-	    } else {
-		if (p[1] != 1 || peek_token() != ')')
-                    error("'void' must be the only parameter");
-
-		/* TODO: This doesn't use void, just throws it away */
-	        free_node(pdecl);
-	    }
-	} else {
-	    if ( pdecls[4][3][0] == 'void' )
-                error("Parameter has incomplete type 'void'");
-
-	    p = vnode_app(p, pdecl);
-	}
-	free_node(pdecls);
-
-	/* It would be easier to code for an optional ',' at the end, but
-	 * the standard doesn't allow for that. */
-	if (peek_token() == ')')
-	    break;
-	skip_node(',');
-    }
-    return p;
 }
 
 /* Scan through FN_DECL for an undeclared parameter matching PDECL, and 
@@ -793,10 +775,9 @@ knr_params( decl ) {
             error("Storage specifiers not allowed on parameter declarations");
 
         while (1) {
-            auto pdecl = declarator( pdecls[4] ), name;
+            auto pdecl = declarator( pdecls[4] );
             if ( !pdecl[4] ) 
                 error("Parameter declarator does not declare anything");
-            name = &pdecl[4][3];
        
             if (pdecl[2][0] == '()')
                 error("Parameter declared as a function");
@@ -827,5 +808,5 @@ fn_defn( decl ) {
 }
 
 top_level() {
-    return declaration( 0, 0 );
+    return declaration(0);
 }
