@@ -85,7 +85,8 @@ grow_tab( tab, entry_size, name ) {
         tab[1] = p + sz;
         tab[2] = p + 2*sz;
     }
-    tab[1][0] = strdup( name );
+    if (name)
+        tab[1][0] = strdup( name );
     tab[1] += entry_size;
     return p + sz;
 }
@@ -94,10 +95,12 @@ grow_tab( tab, entry_size, name ) {
  * or NULL if not found. */
 static *
 lookup_tab( tab, entry_size, name ) {
+    if (!name)
+        return 0;
     auto e = tab[1];
     while (e > tab[0]) {
         e -= entry_size;
-        if ( strcmp( e[0], name ) == 0 )
+        if ( e[0] && strcmp( e[0], name ) == 0 )
             return e;
     }
     return 0;
@@ -179,34 +182,29 @@ save_tag( name, is_defn ) {
         e[4] = scope_id;
         init_tab( &e[5], 24 );               /* sizeof(sym_entry) */   
     }
+    return e;
 }
 
 /* Save a member */
-decl_mem( struct_name, decl, is_union) {
-    auto *e = lookup_tab( structtab, 32, struct_name ); 
-        /* sizeof(struct_entry) */
-
-    if (!e) int_error("No such struct found '%s'", struct_name);
-    if (e[3]) int_error("Struct '%s' is sealed", struct_name);
+decl_mem( entry_ptr, decl, is_union) {
+    if (entry_ptr[3]) int_error("Struct '%s' is sealed", entry_ptr[0]);
 
     /* TODO:  We need to pack members a bit better than this.
      * { char a, b, c; }  has size 4, not 12. */
     auto item_size = promote_sz( type_size( decl[2] ) );
     if (is_union) {
-        save_sym( &e[5], decl, 0, 0 );
-	if (item_size > e[1]) e[1] = item_size;
+        save_sym( &entry_ptr[5], decl, 0, 0 );
+	if (item_size > entry_ptr[1]) entry_ptr[1] = item_size;
     } else {
-        save_sym( &e[5], decl, e[1], 0 );
-        e[1] += item_size;
+        save_sym( &entry_ptr[5], decl, entry_ptr[1], 0 );
+        entry_ptr[1] += item_size;
     }
 }
 
 /* Seal the struct preventing new members from being entered, and
  * mark it complete. */
-seal_tag( name ) {
-    auto *e = lookup_tab( structtab, 32, name ); /* sizeof(struct_entry) */
-    if (!e) int_error("No such struct found '%s'", name);
-    e[3] = 1;
+seal_tag(entry_ptr) {
+    entry_ptr[3] = 1;
 }
 
 member_type( struct_name, mem_name, off_ptr ) {

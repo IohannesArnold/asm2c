@@ -334,74 +334,65 @@ set_dclt(decls, field) {
     decls[4][field] = take_node(0);
 }
 
-/*  Parse a struct tag or struct declaration.
+/*  Parse a struct specifier.
  *
- *  struct-spec  ::= 'struct' ( name | name? '{' struct-decl-list '}' )
+ *  struct-decl-list ::= ( (type-spec)* )* ( (declarator)* ( ':' cond-expr)* )*
+ *  struct-spec  ::= ('struct' | 'union') ( name )? ('{' struct-decl-list '}' )?
  */
 static
 struct_spec() {
     /* Struct node has one op:  stru[3] = name */
-    auto stru = take_node(1), t;
+    auto stru = take_node(1), tag;
 
-    if ( peek_token() != 'id' )
-        error("Expected a tag name in struct declaration");
-    stru[3] = take_node(0);
-    t = peek_token();
-    save_tag( &stru[3][3], t == '{' );
+    if ( peek_token() == 'id') {
+        stru[3] = take_node(0);
+        tag = save_tag( &stru[3][3], peek_token() == '{' );
+    } else if ( peek_token() == '{' ) {
+        tag = save_tag(0, 1);
+    } else 
+        error("Unexpected token '%Mc' in struct declaration", peek_token());
 
-    if ( t == '{' ) {
+    if ( peek_token() == '{' ) {
         skip_node('{');
-        t = peek_token();
         if ( peek_token() == '}' )
             error("Empty structs are not allowed");
 
-        /* We have defined the struct members inside the declaration() 
-         * function, so there's nothing further to do here. */
-        do free_node( declaration( 0, stru ) );
-        while ( peek_token() != '}' );
+	do {
+	    auto decls = decl_specs();
 
+            if ( decls[3] )
+                error("Storage specifiers not allowed on struct members");
+            while (1) {
+                auto decl = declarator(decls[4]);
+
+		/* TODO: implement bitfields */
+		if (peek_token() == ':')
+                    int_error("Bitfields currently unimplemented");
+
+                else if ( !decl[4] )
+                    error("Declarator does not declare anything");
+
+		else if ( decl[2][0] == '()' )
+		    error("Function declarations not permitted in struct");
+
+		decl_mem( tag, decl, stru[3] == 'unio');
+
+		free_node(decl);
+                if ( peek_token() == ';') break;
+                skip_node(',');
+	    }
+
+	    free_node(decls);
+	    skip_node(';');
+
+	} while(peek_token() != '}');
         skip_node('}');
 
         /* Mark the type complete. */
-        seal_tag( &stru[3][3] );
+        seal_tag(tag);
     }
 
     return stru;
-}
-
-/*  Parse a union tag or union declaration.
- *
- *  union-spec  ::= 'union' ( name | name? '{' union-decl-list '}' )
- */
-static
-union_spec() {
-    /* Struct node has one op:  unio[3] = name */
-    auto unio = take_node(1), t;
-
-    if ( peek_token() != 'id' )
-        error("Expected a tag name in union declaration");
-    unio[3] = take_node(0);
-    t = peek_token();
-    save_tag( &unio[3][3], t == '{' );
-
-    if ( t == '{' ) {
-        skip_node('{');
-        t = peek_token();
-        if ( peek_token() == '}' )
-            error("Empty unions are not allowed");
-
-        /* We have defined the union members inside the declaration() 
-         * function, so there's nothing further to do here. */
-        do free_node( declaration( 0, unio ) );
-        while ( peek_token() != '}' );
-
-        skip_node('}');
-
-        /* Mark the type complete. */
-        seal_tag( &unio[3][3] );
-    }
-
-    return unio;
 }
 
 /*  Parse a list of declaration specifiers, and return them in a 'dcls' node.
@@ -438,20 +429,12 @@ decl_specs() {
             decls[3] = take_node(0);
         }
 
-        else if ( t == 'stru' ) {
+        else if ( t == 'stru' | t == 'unio' ) {
             /* 'int struct s' is never allowed. */
             if (decls[4])
                 error("Invalid combination of type specifiers");
 
             decls[4] = struct_spec();
-        }
-
-        else if ( t == 'unio' ) {
-            /* 'int union s' is never allowed. */
-            if (decls[4])
-                error("Invalid combination of type specifiers");
-
-            decls[4] = union_spec();
         }
 
         else if ( t == 'void' || t == 'char' || t == 'int' )
