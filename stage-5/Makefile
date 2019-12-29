@@ -74,7 +74,7 @@ $(BUILD)/ccx0:	$(LD) $(LIBC) $(CRT0) $(CCX0_OBJS:%.o=%0.o)
 	$(LD) -o $@ $(CRT0) $(CCX0_OBJS:%.o=%0.o) $(LIBC)
 
 $(BUILD)/bin/ccx:	$(LD) $(LIBC) $(CRT0) $(CCX1_OBJS:%.o=%1.o)
-	$(LD) -o $@ $(CRT0) $(CCX1_OBJS:%.o=%1.o) $(LIBC)
+	$(LD) -o $@ $(CRT0) $(LIBC) $(CCX1_OBJS:%.o=%1.o) 
 
 # These files need to compile without preprocessing. Note that cli.o, 
 # scanbase.o and expr.o are also used by the compiler and need also 
@@ -88,10 +88,10 @@ $(BUILD)/bin/cpp:	$(LD) $(LIBC) $(CRT0) $(CPP_OBJS)
 CC_OBJS = pvector.o timeconv.o cc.o 
 
 $(BUILD)/bin/cc:	$(LD) $(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) cli.o
-	$(LD) -o $@ $(CRT0) $(CC_OBJS:%.o=%2.o) cli.o $(LIBC)
+	$(LD) -o $@ $(CRT0) $(LIBC) $(CC_OBJS:%.o=%2.o) cli.o 
 
 $(BUILD)/cmp:	$(BUILD)/bin/cc cmp.c cli.b
-	cd $(BUILD)/bin && ./cc -o ../cmp ../../stage-5/cmp.c ../../stage-5/cli.b
+	$(BUILD)/bin/cc --with-cpp=$(BUILD)/bin/cpp --with-ccx=$(BUILD)/bin/ccx --with-as=$(BUILD)/bin/as --with-ld=$(BUILD)/bin/ld -I$(BUILD)/include --nostdlib -o $(BUILD)/cmp $(CRT0) $(LIBC) cmp.c cli.b
 
 .INTERMEDIATE:  $(CCX0_OBJS:%.o=%0.o) $(CCX1_OBJS:%.o=%1.o) \
                 $(CCX1_OBJS:%.o=%.s) $(CCX1_OBJS) $(CPP_OBJS) $(CC_OBJS)
@@ -114,10 +114,10 @@ check-cmp: $(BUILD)/ccx2 $(BUILD)/cc2 $(BUILD)/cmp
 # Build ccx2 and cc2 with a single command.  This is a good test of the 
 # driver logic.
 $(BUILD)/ccx2:	$(BUILD)/bin/cc $(CCX_OBJS:%.o=%.b) nodenew.c
-	cd $(BUILD)/bin && ./cc -o ../ccx2 $(addprefix ../../stage-5/,$(CCX_OBJS:%.o=%.b) nodenew.c)
+	$(BUILD)/bin/cc --with-cpp=$(BUILD)/bin/cpp --with-ccx=$(BUILD)/bin/ccx --with-as=$(BUILD)/bin/as --with-ld=$(BUILD)/bin/ld -I$(BUILD)/include --nostdlib -o $(BUILD)/ccx2 $(CRT0) $(LIBC) $(CCX_OBJS:%.o=%.b) nodenew.c
 
 $(BUILD)/cc2:	$(BUILD)/bin/cc $(BUILD)/ccx2 $(CC_OBJS:%.o=%.c) cli.b
-	cd $(BUILD)/bin && ./cc -o ../cc2 --with-ccx=../ccx2 -I ../../stage-5 $(addprefix ../../stage-5/,$(CC_OBJS:%.o=%.c) cli.b)
+	$(BUILD)/bin/cc --with-cpp=$(BUILD)/bin/cpp --with-ccx=$(BUILD)/ccx2 --with-as=$(BUILD)/bin/as --with-ld=$(BUILD)/bin/ld -I$(BUILD)/include -I./ --nostdlib -o $(BUILD)/cc2 $(CRT0) $(LIBC) $(CC_OBJS:%.o=%.c) cli.b
 
 check:	check-cmp
 #	Commented out while the cpp tests don't work

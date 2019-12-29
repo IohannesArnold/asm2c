@@ -318,7 +318,7 @@ param_list() {
 	        free_node(pdecl);
 	    }
 	} else {
-	    if ( pdecls[4][3][0] == 'void' )
+	    if ( pdecls[4][3][0] == 'void' && pdecl[2][0] != '*' )
                 error("Parameter has incomplete type 'void'");
 
 	    p = vnode_app(p, pdecl);

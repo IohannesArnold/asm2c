@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include "pvector.h"
 
@@ -103,7 +106,6 @@ invoke(struct pvector* args)
     if ( ( pid = fork() ) == 0 )
         execve( args->start[0], args->start, 0 );
     else if ( pid == -1 ) {
-        extern stderr;
         fprintf(stderr, "cc: Unable to invoke %s", args->start[0]);
         exit(1);
     }
@@ -117,7 +119,6 @@ invoke(struct pvector* args)
 preprocess(int argc, char **argv)
 {
     int i = 0, fail = 0;
-    extern char* strdup();
 
     while ( ++i < argc && !fail ) {
         char *arg = argv[i];
@@ -143,13 +144,9 @@ preprocess(int argc, char **argv)
     return fail;
 }
 
-//TODO why does this fail if converted to a C89 declaration?
-compile(argc, argv)
-    int argc;
-    char **argv;
+compile(int argc, char **argv)
 {
     int i = 0, fail = 0;
-    extern char* strdup();
 
     while ( ++i < argc && !fail ) {
         char *arg = argv[i];
@@ -188,7 +185,6 @@ compile(argc, argv)
 assemble(int argc, char **argv)
 {
     int i = 0, fail = 0;
-    extern char* strdup();
 
     while ( ++i < argc && !fail ) {
         char *arg = argv[i];
@@ -231,15 +227,6 @@ link(int argc, char **argv)
     int i = 0, fail = 0;
     struct pvector* free_list = pvec_new();
     char** f;
-    extern char* strdup();
-
-    if ( o_name ) {
-        pvec_push( ld_args, "-o" );
-        pvec_push( ld_args, o_name );
-    }
-
-    if ( !nostdlib ) 
-        pvec_push( ld_args, "../lib/crt0.o" );
 
     while ( ++i < argc ) {
         char *arg = argv[i];
@@ -254,17 +241,13 @@ link(int argc, char **argv)
         }
     } 
 
-    if ( !nostdlib ) 
-        /* This should be -lc, but the stage 3 linker doesn't accept that. */
-        pvec_push( ld_args, "../lib/libc.o" );
-
     fail = invoke( ld_args );
     for ( f = free_list->start; f != free_list->end; ++f ) free(*f);
     return fail;
 }
 
-static char *months[12] = { 
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+static char *months[12] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
@@ -277,22 +260,33 @@ main(int argc, char **argv)
     char buf1[32], buf2[32];
 
     temps = pvec_new();
-    pp_args = pvec_new(); pvec_push( pp_args, "cpp" );
-    cc_args = pvec_new(); pvec_push( cc_args, "ccx" ); 
-    as_args = pvec_new(); pvec_push( as_args, "as" ); 
-    ld_args = pvec_new(); pvec_push( ld_args, "ld" ); 
+    pp_args = pvec_new(); pvec_push( pp_args, "/opt/btr/bin/cpp" );
+    cc_args = pvec_new(); pvec_push( cc_args, "/opt/btr/bin/ccx" ); 
+    as_args = pvec_new(); pvec_push( as_args, "/opt/btr/bin/as" ); 
+    ld_args = pvec_new(); pvec_push( ld_args, "/opt/btr/bin/ld" ); 
 
-    pvec_push( pp_args, "-I../include" );
+    parse_args( argc, argv );
 
-    /* Define these standard macros, as they need compiler support. */ 
-    snprintf(buf1, 32, "-D__DATE__=\"%3s %2d %4d\"", 
+    pvec_push( pp_args, "-I/opt/btr/include" );
+
+    /* Define these standard macros, as they need compiler support. */
+    snprintf(buf1, 32, "-D__DATE__=\"%3s %2d %4d\"",
              months[tm->tm_mon], tm->tm_mday, tm->tm_year+1900);
-    snprintf(buf2, 32, "-D__TIME__=\"%02d:%02d:%02d\"", 
+    snprintf(buf2, 32, "-D__TIME__=\"%02d:%02d:%02d\"",
              tm->tm_hour, tm->tm_min, tm->tm_sec);
     pvec_push( pp_args, buf1 );
     pvec_push( pp_args, buf2 );
 
-    parse_args( argc, argv );
+    if ( o_name ) {
+        pvec_push( ld_args, "-o" );
+        pvec_push( ld_args, o_name );
+    }
+
+    if ( !nostdlib ) {
+        pvec_push( ld_args, "/opt/btr/lib/crt0.o" );
+        pvec_push( ld_args, "/opt/btr/lib/libc.o" );
+    }
+
     res = preprocess(argc, argv);
     if (!res && last_stage > 1) res = compile(argc, argv);
     if (!res && last_stage > 2) res = assemble(argc, argv);
