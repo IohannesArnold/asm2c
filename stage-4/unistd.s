@@ -349,6 +349,30 @@ unlink:
 	RET
 
 
+####	#  Function:	int chdir(char* path);
+	#
+.globl chdir
+chdir:
+	PUSH	%ebp
+	MOVL	%esp, %ebp
+	PUSH	%ebx
+
+	MOVL	8(%ebp), %ebx
+	MOVL	$12, %eax		# 10 == __NR_chdir
+	INT	$0x80
+	CMPL	$-4096, %eax		# -4095 <= %eax < 0 for errno
+	JNA	.L14
+
+	NEGL	%eax
+	MOVL	%eax, errno
+	XORL	%eax, %eax
+	DECL	%eax
+.L14:
+	POP	%ebx
+	POP	%ebp
+	RET
+
+
 ####	#  Function:	time_t time(time_t *t);
 	#
 .globl time
@@ -371,3 +395,5 @@ time:
 	POP	%ebx
 	POP	%ebp
 	RET
+
+
