@@ -41,7 +41,7 @@ $(LD) $(AS):
 LIB_OBJS = string.o ctype.o unistd.o char.o imath.o
 LIB0_OBJS = $(LIB_OBJS) error.o stdio.o memory.o
 LIB1_OBJS = $(LIB_OBJS) exit.o output.o input.o malloc.o signal.o string2.o \
-  stdarg.o
+  stdarg.o unistd2.o
 
 CC_OBJS  = i386.o scanner.o symtab.o expr.o stmt.o main.o
 
