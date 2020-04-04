@@ -21,6 +21,10 @@
 #include <time.h>
 #include "pvector.h"
 
+#ifndef INSTALL_DIR
+#define INSTALL_DIR "/opt/btk"
+#endif
+
 static struct pvector *temps, *pp_args, *cc_args, *as_args, *ld_args;
 static int last_stage = 4;  /* -E = 1, -S = -2, -c = -3 */
 static char* o_name = 0;    /* The -o option, if any is given. */
@@ -260,14 +264,14 @@ main(int argc, char **argv)
     char buf1[32], buf2[32];
 
     temps = pvec_new();
-    pp_args = pvec_new(); pvec_push( pp_args, "/opt/btr/bin/cpp" );
-    cc_args = pvec_new(); pvec_push( cc_args, "/opt/btr/bin/ccx" ); 
-    as_args = pvec_new(); pvec_push( as_args, "/opt/btr/bin/as" ); 
-    ld_args = pvec_new(); pvec_push( ld_args, "/opt/btr/bin/ld" ); 
+    pp_args = pvec_new(); pvec_push( pp_args, INSTALL_DIR "/bin/cpp" );
+    cc_args = pvec_new(); pvec_push( cc_args, INSTALL_DIR "/bin/ccx" ); 
+    as_args = pvec_new(); pvec_push( as_args, INSTALL_DIR "/bin/as" ); 
+    ld_args = pvec_new(); pvec_push( ld_args, INSTALL_DIR "/bin/ld" ); 
 
     parse_args( argc, argv );
 
-    pvec_push( pp_args, "-I/opt/btr/include" );
+    pvec_push( pp_args, "-I" INSTALL_DIR "/include" );
 
     /* Define these standard macros, as they need compiler support. */
     snprintf(buf1, 32, "-D__DATE__=\"%3s %2d %4d\"",
@@ -283,8 +287,8 @@ main(int argc, char **argv)
     }
 
     if ( !nostdlib ) {
-        pvec_push( ld_args, "/opt/btr/lib/crt0.o" );
-        pvec_push( ld_args, "/opt/btr/lib/libc.o" );
+        pvec_push( ld_args, INSTALL_DIR "/lib/crt0.o" );
+        pvec_push( ld_args, INSTALL_DIR "/lib/libc.o" );
     }
 
     res = preprocess(argc, argv);

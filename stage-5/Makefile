@@ -54,7 +54,7 @@ $(INIT):
 	$(BUILD)/bin/ccx -o $@ $<
 
 %.i:	%.c $(BUILD)/bin/cpp
-	$(BUILD)/bin/cpp -I$(BUILD)/include -o $@ $<
+	$(BUILD)/bin/cpp -I$(BUILD)/include -DINSTALL_DIR="\"$(INSTALL_DIR)\"" -o $@ $<
 
 %.s:	%.b $(BUILD)/bin/ccx
 	$(BUILD)/bin/ccx -o $@ $<

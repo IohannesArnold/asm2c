@@ -131,9 +131,32 @@ do_get_qlit(stream, c1, c2) {
     /* Character literals have type int in C. */
     if (c1 == '\'') 
         tok[2] = add_ref( implct_int() );
+
     /* String literals have type char[N] */
-    else if (c1 == '\"')
+    else if (c1 == '\"') {
+	auto c;
+	/* Adjacent string literals get concatenated */
+	while ((c = skip_hwhite(stream)) == '\"') {
+	    auto int l2;
+	    auto tok2 = get_qlit(stream, c1, c2, &l2);
+	    auto str2 = node_str(tok2);
+	    l2 += l;
+	    l++;
+	    str2++;
+
+	    while (*str2 != '\0') {
+	        node_lchar(&tok, &l, *str2);
+	        str2++;
+	    }
+	    node_lchar(&tok, &l, 0);
+
+	    l = l2;
+	    free_node(tok2);
+	}
+
+	ungetc(c, stream);
         tok[2] = chr_array_t(l);
+    }
     else
         int_error("Unknown type of quoted string: %c...%c", c1, c2);
     return tok;

@@ -10,3 +10,7 @@ MAKE  = $(shell which make)
 
 # The build directory
 BUILD_DIR = build
+
+# The directory to install to
+INSTALL_DIR = /opt/btk
+
