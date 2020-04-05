@@ -175,27 +175,33 @@ cont_stmt( loop ) {
     return node;
 }
 
-/*  init-array ::= '{' assign-expr ( ',' assign-expr )* '}' */
+/*  init-list ::= '{' assign-expr ( ',' assign-expr )* '}' */
 static
-init_array( type, req_const ) {
+init_list( type, req_const ) {
     auto init, elts;
+
     if (peek_token() != '{')
-        error("Expected array initialiser");
+        error("Expected initialiser list");
 
-    /* TODO:  This is valid: auto x[] = { 1, 2, 3 }; */
-    if ( !type[4] ) 
-        error("Initialising array of unknown size");
-    else if ( type[4][0] != 'num' )
-        int_error("Array size not an integer");
+    if (type[0] == 'stru') {
+        elts = struct_len(&type[3][3]);
+    } else {
+        /* TODO: This is valid: auto x[] = { 1, 2, 3 }; */
+        if ( !type[4] ) 
+            error("Initialising array of unknown size");
 
-    elts = type[4][3];
+        if ( type[4][0] != 'num' )
+            int_error("Array size not an integer");
+ 
+        elts = type[4][3];
+    }
 
     init = take_node(0);
     init[0] = '{}';
     while (1) {
         auto elt = assign_expr( req_const );
         if (!elts--) 
-            error("Too many array initialisers");
+            error("Too many list initialisers");
         init = vnode_app( init, elt );
         if (peek_token() == '}')
             break;
@@ -721,8 +727,8 @@ declaration(fn) {
         if ( peek_token() == '=' ) {
             auto type = decl[2];
             skip_node('=');
-            if ( type && type[0] == '[]' )
-                decl[5] = init_array( type, !fn );
+            if ( type && (type[0] == '[]' || type[0] == 'stru'))
+                decl[5] = init_list( type, !fn );
             else if ( type && type[0] == '()' )
                 error("Function declarations cannot have initialiser lists");
             else

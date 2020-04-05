@@ -32,7 +32,7 @@ static structtab[3] = { 0, 0, 0 };  /* start, end, end_store */
 /*  struct struct_entry {
  *      char* sym;              [0]
  *      int   size;             [1]
- *      int   unused;           [2]
+ *      int   length;           [2]
  *      bool  complete;         [3]
  *      int   scope_id;         [4]
  *      struct sym_entry *start, *end, *end_store;   [5,6,7] -- for members
@@ -178,7 +178,7 @@ save_tag( name, is_defn ) {
     }
     else {
         e = grow_tab( structtab, 32, name ); /* sizeof(struct_entry) */
-        e[1] = e[3] = 0;
+        e[1] = e[2] = e[3] = 0;
         e[4] = scope_id;
         init_tab( &e[5], 24 );               /* sizeof(sym_entry) */   
     }
@@ -199,6 +199,7 @@ decl_mem( entry_ptr, decl, is_union) {
         save_sym( &entry_ptr[5], decl, entry_ptr[1], 0 );
         entry_ptr[1] += item_size;
     }
+    entry_ptr[2]++;
 }
 
 /* Seal the struct preventing new members from being entered, and
@@ -315,11 +316,20 @@ lookup_type( name ) {
     return e ? e[5][2] : 0;
 }
 
+/* Lookup the size of a struct */
 struct_size( name ) {
     auto e = lookup_tab( structtab, 32, name );    /* sizeof(struct_entry) */
     if (!e || !e[3]) 
         error("Unable to determine the size of an incomplete struct: %s", name);
     return e[1];
+}
+
+/* Lookup the number of members in a struct */
+struct_len( name ) {
+    auto e = lookup_tab( structtab, 32, name );    /* sizeof(struct_entry) */
+    if (!e || !e[3]) 
+        error("Unable to determine the length of an incomplete struct: %s", name);
+    return e[2];
 }
 
 /* Lookup the storage type for a name */
