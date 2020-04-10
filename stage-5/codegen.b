@@ -251,6 +251,27 @@ binary_op(stream, node, need_lval) {
 }
 
 static
+stru_assign(stream, node, need_lval) {
+    /* TODO: Refactor this function, the code is horrible */
+    if (node[0] != '=')
+        int_error("Expected assignment op with struct but got '%Mc'", node[0]);
+
+    auto sz = type_size(node[2]);
+
+
+    auto j=0;
+    while ( j < sz/4 ) {
+        expr_code(stream, node[3], 1);
+        mem_access(stream, j * 4, 1);
+        asm_push(stream);
+        expr_code(stream, node[4], 1);
+        mem_access(stream, j * 4, need_lval);
+	pop_assign(stream, 4);
+	j++;
+    }
+}
+
+static
 opexpr_code(stream, node, need_lval) {
     auto op = node[0];
 
@@ -278,6 +299,9 @@ opexpr_code(stream, node, need_lval) {
         expr_code( stream, node[3], 0 );
         expr_code( stream, node[4], 0 );
     }
+
+    else if ( node[2][0] == 'stru' && op == '=')
+        stru_assign( stream, node, need_lval );
 
     /* Binary operators */
     else if ( node[1] == 2 )

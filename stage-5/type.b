@@ -199,6 +199,8 @@ chk_assign(node) {
         auto type1 = node[3][2], type2 = node[4][2];
         if ( is_arith(type1) && is_arith(type2) )
             ;
+        else if ( are_compat(type1, type2) )
+            /* Allow compatible types */ ;
         else if ( is_pointer(type1) && is_pointer(type2) ) {
             if ( compat_flag && type1[3][0] != 'stru' && type2[3][0] != 'stru' )
                 ;
