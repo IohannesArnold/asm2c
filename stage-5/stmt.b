@@ -220,10 +220,10 @@ block( fn, loop, swtch ) {
     skip_node('{');
 
     while ( peek_token() != '}' ) {
-	if ( is_dclspec() )
-	    block = vnode_app(block, declaration(fn));
-	else
-	    block = vnode_app(block, stmt(fn, loop, swtch));
+        if ( is_dclspec() )
+            block = vnode_app(block, declaration(fn));
+        else
+            block = vnode_app(block, stmt(fn, loop, swtch));
     }
 
     end_block();
@@ -311,31 +311,31 @@ param_list() {
     }
     while (1) {
         auto pdecls = decl_specs();
-	auto pdecl = declarator(pdecls[4]);
+        auto pdecl = declarator(pdecls[4]);
 
-	if ( !pdecl[4] ) {
-	    if ( pdecls[4][3][0] != 'void' ) {
+        if ( !pdecl[4] ) {
+            if ( pdecls[4][3][0] != 'void' ) {
                 error("Parameter name omitted");
-	    } else {
-		if (p[1] != 1 || peek_token() != ')')
+            } else {
+                if (p[1] != 1 || peek_token() != ')')
                     error("'void' must be the only parameter");
 
-		/* TODO: This doesn't use void, just throws it away */
-	        free_node(pdecl);
-	    }
-	} else {
-	    if ( pdecls[4][3][0] == 'void' && pdecl[2][0] != '*' )
+                /* TODO: This doesn't use void, just throws it away */
+                free_node(pdecl);
+            }
+        } else {
+            if ( pdecls[4][3][0] == 'void' && pdecl[2][0] != '*' )
                 error("Parameter has incomplete type 'void'");
 
-	    p = vnode_app(p, pdecl);
-	}
-	free_node(pdecls);
+            p = vnode_app(p, pdecl);
+        }
+        free_node(pdecls);
 
-	/* It would be easier to code for an optional ',' at the end, but
-	 * the standard doesn't allow for that. */
-	if (peek_token() == ')')
-	    break;
-	skip_node(',');
+        /* It would be easier to code for an optional ',' at the end, but
+         * the standard doesn't allow for that. */
+        if (peek_token() == ')')
+            break;
+        skip_node(',');
     }
     return p;
 }
@@ -474,35 +474,35 @@ struct_spec() {
         if ( peek_token() == '}' )
             error("Empty structs are not allowed");
 
-	do {
-	    auto decls = decl_specs();
+        do {
+            auto decls = decl_specs();
 
             if ( decls[3] )
                 error("Storage specifiers not allowed on struct members");
             while (1) {
                 auto decl = declarator(decls[4]);
 
-		/* TODO: implement bitfields */
-		if (peek_token() == ':')
+                /* TODO: implement bitfields */
+                if (peek_token() == ':')
                     int_error("Bitfields currently unimplemented");
 
                 else if ( !decl[4] )
                     error("Declarator does not declare anything");
 
-		else if ( decl[2][0] == '()' )
-		    error("Function declarations not permitted in struct");
+                else if ( decl[2][0] == '()' )
+                    error("Function declarations not permitted in struct");
 
-		decl_mem( tag, decl, stru[3] == 'unio');
+                decl_mem( tag, decl, stru[3] == 'unio');
 
-		free_node(decl);
+                free_node(decl);
                 if ( peek_token() == ';') break;
                 skip_node(',');
-	    }
+            }
 
-	    free_node(decls);
-	    skip_node(';');
+            free_node(decls);
+            skip_node(';');
 
-	} while(peek_token() != '}');
+        } while(peek_token() != '}');
         skip_node('}');
 
         /* Mark the type complete. */
@@ -556,7 +556,7 @@ decl_specs() {
         }
 
         else if ( t == 'enum' ) {
-	    int_error("Enums not yet implemented");
+            int_error("Enums not yet implemented");
             /* 'int enum s' is never allowed. */
             if (decls[4])
                 error("Invalid combination of type specifiers");
@@ -569,8 +569,8 @@ decl_specs() {
         else if ( t == 'sign' || t == 'unsi' )
             set_dclt(decls, 5);
 
-	/* TODO: implement type qualifiers.
-	 * These nodes just sit here and don't do anything. */
+        /* TODO: implement type qualifiers.
+         * These nodes just sit here and don't do anything. */
         else if ( t == 'cons' || t == 'vola' )
             set_dclt(decls, 6);
 
@@ -602,7 +602,7 @@ decl_specs() {
         if ( !decls[4][3] ) decls[4][3] = new_node('int', 0);
 
         if ( decls[4][3][0] == 'void' && ( decls[4][4] || decls[4][5] ))
-	    error("Invalid combination of type specifiers");
+            error("Invalid combination of type specifiers");
        
         if ( decls[4][3][0] == 'char' && decls[4][4] )
             error("Invalid combination of type specifiers");
@@ -641,18 +641,18 @@ declaration(fn) {
     /* Struct and union declarations needn't have declarators. */
     if (peek_token() == ';' && (decls[4][0] == 'stru' || decls[4][0] == 'unio')){
         skip_node(';');
-	return decls;
+        return decls;
     }
 
     while (1) {
         auto decl = declarator(decls[4]), name; 
         if ( !decl[4] )
-	    error("Declarator does not declare anything");
+            error("Declarator does not declare anything");
         name = &decl[4][3];
 
-	if (decls[4][3][0] == 'void' && decl[2][0] != '*' && decl[2][0] != '()')
-	    error("Variable has incomplete type 'void'");
-	
+        if (decls[4][3][0] == 'void' && decl[2][0] != '*' && decl[2][0] != '()')
+            error("Variable has incomplete type 'void'");
+
         /* Store storage specifier: particularly important for 'register'
          * so we can check it when taking the address of an identifier. */
         if ( decls[3] )
