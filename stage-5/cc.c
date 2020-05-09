@@ -83,6 +83,11 @@ parse_args(int argc, char **argv)
             nostdlib = 1; ++i;
         }
 
+        else if ( strcmp( arg, "-static" ) == 0 ) {
+            /* Discard -static. We can't do anything else. */
+            ++i;
+        }
+
         else if ( strcmp( arg, "--help" ) == 0 )
             usage();
 
