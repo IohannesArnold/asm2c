@@ -84,5 +84,5 @@ TODO:
   - Prototypes
   - Bit fields (probably not in this stage?), floats
   - n1062 #scopes?
-  - #pragma once?
+  - #pragma once?  Or #once and #forget per p0538r0?
   - Use temporary file names in driver
