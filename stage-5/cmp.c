@@ -18,7 +18,7 @@
 #include <stdio.h> 
 
 usage() {
-    cli_error("Usage: cmp [-s] file1 file2\n");
+    cli_error("Usage: cmp [-l|-s] file1 file2\n");
 }
 
 main(int argc, char **argv) 
