@@ -290,6 +290,12 @@ main(int argc, char **argv)
         pvec_push( ld_args, "-o" );
         pvec_push( ld_args, o_name );
     }
+    /* Ideally the linker would default to producing a.out, but we may still
+     * be using the stage-3 linker which is very primitive and does not. */
+    else {
+        pvec_push( ld_args, "-o" );
+        pvec_push( ld_args, "a.out" );
+    }
 
     if ( !nostdlib ) {
         pvec_push( ld_args, INSTALL_DIR "/lib/crt0.o" );
