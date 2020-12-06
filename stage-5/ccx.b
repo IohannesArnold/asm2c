@@ -82,7 +82,7 @@ main(argc, argv)
     l = strlen(filename);
     if ( rchar( filename, l-1 ) != 'c' && rchar( filename, l-1 ) != 'i'
          && rchar( filename, l-1 ) != 'b' || rchar( filename, l-2 ) != '.' )
-        cli_error("ccx: input filename has wrong extension\n");
+        cli_error("ccx: input filename  must have .c, .b or .i extension\n");
 
     if ( rchar( filename, l-1 ) == 'b') {
 	    compat_flag = 1;
