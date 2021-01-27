@@ -156,7 +156,7 @@ static
 subscript(stream, node, need_lval) {
     auto type = node[3][2];  /* type being subscripted */
 
-    /* For (hopefully temporary) compatibility with stage-4, we allow an 
+    /* For (hopefully temporary) compatibility with stage 2, we allow an 
      * implicit int to be dereferenced as an int*. */
     extern compat_flag;
     auto elt_sz = compat_flag && type == implct_int() ? 4 

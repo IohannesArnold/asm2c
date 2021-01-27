@@ -23,7 +23,7 @@ get_line() {
     return line;
 }
 
-/* 11 character limit on external identifiers in stage-3 as & ld */
+/* 11 character limit on external identifiers in as & ld */
 getfilename() {
     return filename;
 }
@@ -657,7 +657,7 @@ open_scan( in_filename, search_path )
         }
         free(f);
         /* This is ++search_path, but because sizeof(*search_path) > 1, we
-         * cannot do that (and expect it to work) in the stage-4 cc. */
+         * cannot do that (and expect it to work) in the stage 2 bc. */
         search_path = &search_path[1];
     }
     error("Unable to load file \"%s\"", in_filename);
@@ -693,7 +693,7 @@ store_scan(file_ptr, line_ptr, stream_ptr )
     *stream_ptr = input_strm;
 }
 
-/* 11 character limit on external identifiers in stage-3 as & ld */
+/* 11 character limit on external identifiers in as & ld */
 restorescan(new_file, new_line, new_strm)
     char*        new_file;
     int          new_line;

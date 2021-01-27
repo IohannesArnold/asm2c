@@ -1,4 +1,4 @@
-# Makefile
+# 2-b_compiler/Makefile
 # Copyright (C) 2009-2019 Richard Smith <richard@ex-parrot.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,15 +14,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-include ./config.make
+include ../config.make
+BUILD = ../$(BUILD_DIR)
 
-STAGES = 1-asm_libc 2-b_compiler 3-b_libc 4-c_compiler 5-cpp+c
+AS    = $(BUILD)/bin/as
+LD    = $(BUILD)/bin/ld
 
-all check: $(BUILD_DIR)
-	set -e; for n in $(STAGES); do $(MAKE) -r -C $$n $@; done
+all:	$(BUILD)/bc 
 
-$(BUILD_DIR): 
-	mkdir -p $(BUILD_DIR)/bin $(BUILD_DIR)/lib
+$(BUILD)/lib/crt0.o $(BUILD)/asmlibc.o:
+	$(MAKE) -C ../1-asm_libc
 
-clean:
-	$(RM) -rf $(BUILD_DIR)
+# Suppress the default rules
+.SUFFIXES:
+
+%.o:	%.s
+	$(AS) $<
+
+BC_OBJS  = i386.o scanner.o symtab.o expr.o stmt.o main.o
+
+$(BUILD)/bc:	$(BUILD)/lib/crt0.o $(BUILD)/asmlibc.o $(BC_OBJS)
+	$(LD) -o $@ $^
+
+.INTERMEDIATE:	$(LIB_OBJS)

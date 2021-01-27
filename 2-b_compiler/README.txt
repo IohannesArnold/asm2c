@@ -1,6 +1,6 @@
-BOOTSTRAP STAGE 4
+C BOOTSTRAP STAGE 2
 
-The main product of stage 4 is a complier.  The original intention had 
+The main product of stage 2 is a compiler.  The original intention had 
 been to implement a B compiler, perhaps with the caveat that the few
 constructs that changed syntactically between B and C would be 
 implemented in the C way -- for example, += not =+, and 'extern' not
@@ -33,7 +33,7 @@ placed immediately after auto, and the identifiers in an auto
 declaration can be preceded with one or more *.  A list of parameter 
 declarations may precede the opening brace of a function.
 
-Summary of differences from B:
+Summary of differences from the historical B:
 
   * Compound assignment operators are spelt OP= instead of =OP.
   * There are no relop assignment operators (e.g. =<, =>=, ===).
@@ -50,9 +50,9 @@ Summary of differences from B:
   * The escape characters in strings is \ not *, and there is no \e.
   * We don't support the switch statement, or therefore case labels.
   * We don't support goto and labeled statements.
-  * Not a difference, but B does not support 'for' loops and nor do we.
+  * Not a difference, but B did not support 'for' loops and neither do we.
 
-The stage 4 compiler is a simple afair, making a single pass over the 
+The stage 2 compiler is a simple afair, making a single pass over the 
 input file and code generation is done straight out of the parser,
 without building an abstract syntax tree (AST) representation.  This 
 means that the code generated is very inefficient, and even very obvious
@@ -61,20 +61,5 @@ conversions are done as separate statements, so to read a local auto
 variable, we generated LEA -offset(%ebp), %eax; MOVL (%eax), %eax
 instead of the more obvious MOVL -offset(%ebp), %eax.
 
-  Usage: cc -S file.c
-
-The compiler is initially linked against a trivial I/O library that
-implements the basic C I/O functions in an unbuffered manner, doing one
-syscall per call to getchar() or putchar().  Similarly, malloc() is
-implemented as in stage 3, by sending each allocation request to the
-kernel as a mmap(MAP_ANON) call.  The resultant compiler, cc0, is used
-to compile an improved set of I/O and memory-management functions that 
-do buffering.  These are linked together with ld -r into a proto-C-
-library, libc.o.  There is also a trivial startup file, crt0.o, that 
-implements _start() by calling exit(main()).  We use these to relink 
-the compiler against this to produce a significantly faster compiler.
-
-Linking a program is typically achieved with a command such as:
-
-  ld -o prog libc.o crt0.o file1.o file2.o ...
+  Usage: bc -S file.b
 

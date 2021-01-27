@@ -20,9 +20,9 @@ sz_suffix(sz) {
     extern compat_flag;
     if (sz == 4) return 'L';
 
-    /* Stage 4 treated everything as an int. */
+    /* Stage 2 treated everything as an int. */
     if (compat_flag) 
-        error("Operand size has changed since stage-4", sz);
+        error("Operand size has changed since stage 2", sz);
 
     if (sz == 2) return 'W';
     else if (sz == 1) return 'B';
@@ -52,7 +52,7 @@ acc_to_aux(stream) {
 
 load_num(stream, num, is_unsgn) {
     /* We want to print big unsigned numbers in hex to avoid an error from
-     * the stage-3 assembler which detects signed overflow on decimals. */
+     * the assembler which detects signed overflow on decimals. */
     fprintf(stream, is_unsgn && num & 0x80000000 
                       ? "\tMOVL\t$0x%X, %%eax\n" : "\tMOVL\t$%d, %%eax\n", num);
 }

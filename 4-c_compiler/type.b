@@ -119,7 +119,7 @@ is_pointer(type) {
     return t == '*' || t == '[]';
 }
 
-/* For (hopefully temporary) compatibility with stage-4, we allow an 
+/* For (hopefully temporary) compatibility with stage 2, we allow an 
  * implicit int to be dereferenced like a pointer.  Explicit int is not 
  * so treated. */
 static
@@ -235,7 +235,7 @@ chk_subscr(node) {
     else
         error( "Attempted to dereference a non-pointer type" );
    
-    /* For (hopefully temporary) compatibility with stage-4, we allow an 
+    /* For (hopefully temporary) compatibility with stage 2, we allow an 
      * implicit int to be dereferenced.  Explicit int is not so treated. */
     if ( compat_flag && type1 == s_int )
         node[2] = add_ref(s_int);
@@ -247,7 +247,7 @@ chk_subscr(node) {
     if ( compat_flag && type_size(node[2]) != 4 ) {
         auto buf[16];
         print_type( buf, 64, node[2] );
-        error( "Element size has changed since stage-4: %s", buf);
+        error( "Element size has changed since stage 2: %s", buf);
     }
 }
 
@@ -257,7 +257,7 @@ chk_deref(node) {
     if ( !can_deref(type) )
         error( "Attempted to dereference a non-pointer type" );
 
-    /* For (hopefully temporary) compatibility with stage-4, we allow an 
+    /* For (hopefully temporary) compatibility with stage 2, we allow an 
      * implicit int to be dereferenced.  Explicit int is not so treated. */
     if ( compat_flag && type == s_int )
         node[2] = add_ref(s_int);
@@ -440,7 +440,7 @@ chk_add(p) {
     if ( compat_flag && is_pointer( p[2] ) && type_size( p[2][3] ) != 1 ) {
         auto buf[16];
         print_type( buf, 64, p[2][3] );
-        error( "Element size has changed since stage-4: %s", buf );
+        error( "Element size has changed since stage 2: %s", buf );
     }
 }
 
@@ -475,12 +475,12 @@ chk_incdec(p) {
     /* Its type is its argument's type. */
     p[2] = add_ref( p[3][2] );
 
-    /* In stage-4, increments were always done as if on an int.  This 
+    /* In stage 2, increments were always done as if on an int.  This 
      * means that int* now increments differently.  Warn about that. */
     if ( compat_flag && is_pointer( p[2] ) && type_size( p[2][3] ) != 1 ) {
         auto buf[16];
         print_type( buf, 64, p[2][3] );
-        error( "Element size has changed since stage-4: %s", buf);
+        error( "Element size has changed since stage 2: %s", buf);
     }
         
 }

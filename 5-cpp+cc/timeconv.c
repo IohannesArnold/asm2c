@@ -28,7 +28,7 @@ leap_year(year) {
     else return 1;
 }
 
-/* The stage-5 compiler doesn't support multi-dimensional arrays */
+/* The stage 4 compiler doesn't support multi-dimensional arrays */
 static int month_lens[26] = { 
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0,
     31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0

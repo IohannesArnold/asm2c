@@ -16,8 +16,8 @@
  */
 
 /* 
- * Global flag for whether we are compiling the stage-4 B language 
- * or the stage-5 C language
+ * Global flag for whether we are compiling the stage 2 B language 
+ * or the stage 4 C language
  */
 compat_flag = 0;
 

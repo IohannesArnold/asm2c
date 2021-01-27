@@ -1,43 +1,10 @@
-BOOTSTRAP STAGE 5
+C BOOTSTRAP STAGE 5
 
-Stage 5 reimplements the compiler from stage 4 in the B-like language 
-of stage-4 compiler.  This allows a significantly more advanced 
-implementation, with the result that it supports most of syntax of K&R
-C (most notably, a type system) and is more efficient.
-
-New features in stage 5 compiler:
-  - for loops
-  - goto and labelled statements
-  - switch, case labels and default (implemented inefficiently as a 
-      sequence of if-else statements)
-  - a type system, including all of C's integer and character types, 
-      pointers, arrays and function pointers
-  - structs
-  - member access with the -> and . operators
-  - sizeof operator
-  - comma operator
-  - type casts
-  - C++-style comments
-  - typedefs
-  - #line directives (in the compiler proper) for improved diagnostics
-
-The compiler is named ccx.
-
-  Usage: ccx [OPTIONS] FILENAME
-
-  Options:
-    --help              Displays the help text
-    -o FILENAME         Specifies the output file name
-
-If no -o option is specified, the input file has a .c or .i extension,
-the output is the same file name but with a .s extension.  
-
-The new C-like compiler is used to implement a simple preprocessor, cpp,
-which is almost entirely compliant with the C90 standard.  (The only
-known deviations from the standard are that it fails to handle
-white-space correctly in stringification, doesn't implement digraphs or
-trigraphs, or the ... punctuator, and will not concatenate string
-literals.)
+Stage 5 implements a simple preprocessor, cpp, which is almost entirely
+compliant with the C90 standard.  (The only known deviations from the
+standard are that it fails to handle white-space correctly in
+stringification, doesn't implement digraphs or trigraphs,
+or the ... punctuator.)
 
   Usage: cpp [OPTIONS] FILENAME
 
@@ -48,7 +15,6 @@ literals.)
     -D NAME[=VAL]       Pre-defines a macro, optionally with a value
     --include FILENAME  Prefixes the specified file to the input
     -P                  Don't put #line directives in output
-
 
 Finally, a compiler driver called cc has been written to simplify the
 use of the four build tools (cpp, ccx, as and ld).  
@@ -78,11 +44,4 @@ The compiler driver instructs the preprocessor to search the include/
 directory.  The __DATE__ and __TIME__ macros are also defined by the 
 driver and passed to the preprocessor viathe command line.
 
-TODO:
-  - Errors on duplicate declarations at global scope
-  - Tentative definitions
-  - Prototypes
-  - Bit fields (probably not in this stage?), floats
-  - n1062 #scopes?
-  - #pragma once?  Or #once and #forget per p0538r0?
-  - Use temporary file names in driver
+

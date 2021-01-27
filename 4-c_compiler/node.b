@@ -136,7 +136,7 @@ node_str(node) {
 }
 
 /* Returns the node type.  This only exists to abstract the difference
- * between t[0] (in stage-4) and t->code (in stage-5).  */
+ * between t[0] (in stage 2) and t->code (in stage 4).  */
 node_code(node) {
     return node[0];
 }
@@ -182,7 +182,7 @@ node_lchar( node_ptr, len_ptr, chr )
 }
 
 /* Push-back facility doesn't really belong here, but having to keep 
- * compatibility with the stage-4 bc is tricky.
+ * compatibility with the stage 2 bc is tricky.
  *
  * This is a struct pb_slot { struct node* token; struct pb_slot* next } *; */
 static pb_stack = 0;

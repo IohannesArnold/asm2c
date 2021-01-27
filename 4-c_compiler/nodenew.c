@@ -272,7 +272,7 @@ node_str(node)
 }
 
 /* Returns the node type.  This only exists to abstract the difference
- * between t[0] (in stage-4) and t->code (in stage-5).  */
+ * between t[0] (in stage 2) and t->code (in stage 4).  */
 node_code(node) 
     struct node* node;
 {
@@ -379,7 +379,7 @@ node_strcat( node_ptr, len_ptr, str, len )
 }
     
 /* Push-back facility doesn't really belong here, but having to keep 
- * compatibility with the stage-4 bc is tricky. */
+ * compatibility with the stage 2 bc is tricky. */
 static struct pb_slot {
     struct node* node;
     struct pb_slot* next;
