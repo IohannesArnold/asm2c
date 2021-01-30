@@ -22,7 +22,7 @@ AS    = $(BUILD)/bin/as
 LIBC  = $(BUILD)/lib/libc.o
 CRT0  = $(BUILD)/lib/crt0.o
 
-all:	$(BUILD)/bin/cpp #$(BUILD)/bin/cc 
+all:	$(BUILD)/bin/cpp $(BUILD)/bin/cc 
 
 INIT  = $(LIBC) $(CRT0) $(BUILD)/bin/ccx $(BUILD)/include
 
@@ -41,9 +41,13 @@ $(INIT):
 %.s:	%.c $(BUILD)/bin/ccx
 	$(BUILD)/bin/ccx -o $@ $<
 
+%2.s:	%.i $(BUILD)/bin/ccx
+	$(BUILD)/bin/ccx -o $@ $<
+
 %.i:	%.c $(BUILD)/bin/cpp
 	$(BUILD)/bin/cpp -I$(BUILD)/include \
 	-DINSTALL_DIR="\"$(INSTALL_DIR)\"" -o $@ $<
+
 
 # These files need to compile without preprocessing. Note that cli.o, 
 # scanbase.o and expr.o are also part of the stage 4 compiler and so
@@ -56,10 +60,12 @@ $(BUILD)/bin/cpp:	$(LIBC) $(CRT0) $(CPP_OBJS)
 
 CC_OBJS = pvector.o timeconv.o cc.o 
 
-#$(BUILD)/bin/cc:	$(LD) $(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) ../4-c_compiler/cli.o
-#	$(LD) -o $@ $^
+$(BUILD)/bin/cc:	$(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) \
+	../4-c_compiler/cli.o
+	$(LD) -o $@ $^
 
-.INTERMEDIATE:  $(CPP_OBJS) $(CC_OBJS)
+.INTERMEDIATE:  $(CPP_OBJS) $(CC_OBJS:%.o=%2.o) ../4-c_compiler/cli.o
 
 clean:
-	$(RM) -f $(CPP_OBJS:%.o=%.s) $(CPP_OBJS) $(BUILD)/cpp
+	$(RM) -f $(CPP_OBJS:%.o=%.s) $(CPP_OBJS) $(CC_OBJS:%.o=%2.o) \
+		 $(BUILD)/bin/cpp $(BUILD)/bin/cc

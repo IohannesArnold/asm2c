@@ -16,7 +16,7 @@
 
 include ./config.make
 
-STAGES = 1-asm_libc 2-b_compiler 3-b_libc 4-c_compiler 5-cpp+c
+STAGES = 1-asm_libc 2-b_compiler 3-b_libc 4-c_compiler 5-cpp+cc
 
 all check: $(BUILD_DIR)
 	set -e; for n in $(STAGES); do $(MAKE) -r -C $$n $@; done
