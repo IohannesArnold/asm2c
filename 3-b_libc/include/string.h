@@ -21,17 +21,18 @@
 #include <bits/null.h>
 #include <bits/size_t.h>
 
-size_t strlen(char* s);
-size_t strnlen(char* s, size_t maxlen);
-int strcmp(char const* a, char const* b);
-int strncmp(char const* a, char const* b, size_t n);
-int strchr(char const* a, int c);
-int strcpy(char* dest, char const* str);
-int strncpy(char* dest, char const* str, size_t n);
+size_t strlen(char *s);
+size_t strnlen(char *s, size_t maxlen);
+int strcmp(char const *a, char const *b);
+int strncmp(char const *a, char const *b, size_t n);
+char *strchr(char const *a, int c);
+char *strrchr(char const *a, int c);
+char *strcpy(char *dest, char const *str);
+char *strncpy(char *dest, char const *str, size_t n);
 char *strcat(char *dest, const char *src);
 char *strdup(const char *s);
 
-int memcpy(char* dest, char const* str, size_t n);
-void* memset(void* s, int c, size_t n);
+void *memcpy(void* dest, void const *src, size_t n);
+void *memset(void* s, int c, size_t n);
 void *memmove(void *str1, const void *str2, size_t n);
 #endif

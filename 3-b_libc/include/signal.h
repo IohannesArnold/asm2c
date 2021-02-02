@@ -18,7 +18,7 @@
 #ifndef __SIGNAL_H__
 #define __SIGNAL_H__
 
-int raise(int sig)
+int raise(int sig);
 void (*signal(int signum, void (*handler)(int)))(int);
 
 #endif
