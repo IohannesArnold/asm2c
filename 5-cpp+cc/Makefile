@@ -58,13 +58,13 @@ CPP_OBJS = $(addprefix ../4-c_compiler/,expr.o scanbase.o nodenew.o) \
 $(BUILD)/bin/cpp:	$(LIBC) $(CRT0) $(CPP_OBJS)
 	$(LD) -o $@ $^
 
-CC_OBJS = pvector.o timeconv.o cc.o 
+CC_OBJS = pvector.o timeconv.o cc.o cli.o
 
-$(BUILD)/bin/cc:	$(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) cli.o
+$(BUILD)/bin/cc:	$(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) 
 	$(LD) -o $@ $^
 
 .INTERMEDIATE:  $(CPP_OBJS) $(CC_OBJS:%.o=%2.o)
 
 clean:
-	$(RM) -f $(CPP_OBJS:%.o=%.s) $(CPP_OBJS) $(CC_OBJS:%.o=%2.o) cli.o \
+	$(RM) -f $(CPP_OBJS:%.o=%.s) $(CPP_OBJS) $(CC_OBJS:%.o=%2.o) \
 		 $(BUILD)/bin/cpp $(BUILD)/bin/cc

@@ -1,4 +1,4 @@
-/* cli.b  --  command line interface utils
+/* cli.c  --  command line interface utils
  * Copyright (C) 2013-2019 Richard Smith <richard@ex-parrot.com>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -15,21 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-cli_error(fmt) 
-    char *fmt;
+void cli_error(char *fmt) 
 {
     extern stderr;
     vfprintf(stderr, fmt, &fmt);
     exit(1);
 }
 
-char* opt_arg(argv, argc, argnptr, argname)
-    char **argv;
-    int argc, *argnptr;
-    char *argname;
+char* opt_arg(char **argv, int argc, int *argnptr, char *argname)
 {
-    auto char *arg = argv[*argnptr];
-    auto int arglen = strlen(argname);
+    char *arg = argv[*argnptr];
+    int arglen = strlen(argname);
     if ( strncmp( arg, argname, arglen ) == 0 ) {
         if ( rchar( arg, arglen ) == 0 ) {
             if ( ++*argnptr == argc )
