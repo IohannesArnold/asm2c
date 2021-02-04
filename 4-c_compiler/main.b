@@ -30,6 +30,14 @@ compile(output) {
     }
 }
 
+cli_error(fmt) 
+    char *fmt;
+{
+    extern stderr;
+    vfprintf(stderr, fmt, &fmt);
+    exit(1);
+}
+
 usage() {
     cli_error("Usage: ccx [-o filename.s] filename\n");
 }
@@ -47,13 +55,15 @@ main(argc, argv)
     auto struct FILE* file;
 
     while ( i < argc ) {
-        auto char *arg = argv[i], *arg2;
+        auto char *arg = argv[i];
 
-        if ( arg2 = opt_arg( argv, argc, &i, "-o" ) ) {
+        if ( strcmp( arg, "-o" ) == 0 ) {
+            if (++i == argc)
+                cli_error("The -o option takes an argument\n");
             if ( outname ) cli_error(
                 "Multiple output files specified: '%s' and '%s'\n",
-                outname, arg2 );
-            outname = arg2;
+                outname, argv[i] );
+            outname = argv[i++];
         }
 
         else if ( strcmp( arg, "--help" ) == 0 ) 
@@ -85,7 +95,7 @@ main(argc, argv)
         cli_error("ccx: input filename  must have .c, .b or .i extension\n");
 
     if ( rchar( filename, l-1 ) == 'b') {
-	    compat_flag = 1;
+            compat_flag = 1;
     }
 
     if (!outname) {

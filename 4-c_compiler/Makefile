@@ -59,8 +59,8 @@ $(INIT):
 %.s:	%.c $(BUILD)/bin/ccx
 	$(BUILD)/bin/ccx -o $@ $<
 
-CCX_OBJS  = scanbase.o scanner.o symtab.o expr.o stmt.o type.o \
-            codegen.o i386.o ccx.o cli.o
+CCX_OBJS  = main.o scanbase.o scanner.o symtab.o expr.o stmt.o type.o \
+            codegen.o i386.o cli.o
 
 # We replace node.o with a new version written using structs (and which
 # therefore won't compile using stage 2 bc), partly as a test of the stage 2 bc.
