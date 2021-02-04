@@ -49,23 +49,22 @@ $(INIT):
 	-DINSTALL_DIR="\"$(INSTALL_DIR)\"" -o $@ $<
 
 
-# These files need to compile without preprocessing. Note that cli.o, 
-# scanbase.o and expr.o are also part of the stage 4 compiler and so
-# also need to compile with the stage 2 bc.
-CPP_OBJS = $(addprefix ../4-c_compiler/,cli.o expr.o scanbase.o nodenew.o) \
-	   macros.o pvector.o cpp.o cpptype.o eval.o
+# These files need to compile without preprocessing. Note that expr.o and
+# scanbase.o are also part of the stage 4 compiler and so also need to
+# compile with the stage 2 bc.
+CPP_OBJS = $(addprefix ../4-c_compiler/,expr.o scanbase.o nodenew.o) \
+	   macros.o pvector.o cpp.o cpptype.o eval.o cli.o 
 
 $(BUILD)/bin/cpp:	$(LIBC) $(CRT0) $(CPP_OBJS)
 	$(LD) -o $@ $^
 
 CC_OBJS = pvector.o timeconv.o cc.o 
 
-$(BUILD)/bin/cc:	$(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) \
-	../4-c_compiler/cli.o
+$(BUILD)/bin/cc:	$(LIBC) $(CRT0) $(CC_OBJS:%.o=%2.o) cli.o
 	$(LD) -o $@ $^
 
-.INTERMEDIATE:  $(CPP_OBJS) $(CC_OBJS:%.o=%2.o) ../4-c_compiler/cli.o
+.INTERMEDIATE:  $(CPP_OBJS) $(CC_OBJS:%.o=%2.o)
 
 clean:
-	$(RM) -f $(CPP_OBJS:%.o=%.s) $(CPP_OBJS) $(CC_OBJS:%.o=%2.o) \
+	$(RM) -f $(CPP_OBJS:%.o=%.s) $(CPP_OBJS) $(CC_OBJS:%.o=%2.o) cli.o \
 		 $(BUILD)/bin/cpp $(BUILD)/bin/cc
