@@ -21,8 +21,28 @@
 #include <time.h>
 #include "pvector.h"
 
-#ifndef INSTALL_DIR
-#define INSTALL_DIR "/opt/btk"
+#ifndef DEFAULT_LD
+#define DEFAULT_LD INSTALL_DIR "/bin/ld"
+#endif
+
+#ifndef DEFAULT_AS
+#define DEFAULT_AS INSTALL_DIR "/bin/as"
+#endif
+
+#ifndef DEFAULT_CCX
+#define DEFAULT_CCX INSTALL_DIR "/bin/ccx"
+#endif
+
+#ifndef DEFAULT_CPP
+#define DEFAULT_CPP INSTALL_DIR "/bin/cpp"
+#endif
+
+#ifndef DEFAULT_INCLUDE_DIR
+#define DEFAULT_INCLUDE_DIR INSTALL_DIR "/include"
+#endif
+
+#ifndef DEFAULT_LIB_DIR
+#define DEFAULT_LIB_DIR INSTALL_DIR "/lib"
 #endif
 
 static struct pvector *temps, *pp_args, *cc_args, *as_args, *ld_args;
@@ -269,14 +289,14 @@ main(int argc, char **argv)
     char buf1[32], buf2[32];
 
     temps = pvec_new();
-    pp_args = pvec_new(); pvec_push( pp_args, INSTALL_DIR "/bin/cpp" );
-    cc_args = pvec_new(); pvec_push( cc_args, INSTALL_DIR "/bin/ccx" ); 
-    as_args = pvec_new(); pvec_push( as_args, INSTALL_DIR "/bin/as" ); 
-    ld_args = pvec_new(); pvec_push( ld_args, INSTALL_DIR "/bin/ld" ); 
+    pp_args = pvec_new(); pvec_push( pp_args, DEFAULT_CPP );
+    cc_args = pvec_new(); pvec_push( cc_args, DEFAULT_CCX ); 
+    as_args = pvec_new(); pvec_push( as_args, DEFAULT_AS ); 
+    ld_args = pvec_new(); pvec_push( ld_args, DEFAULT_LD ); 
 
     parse_args( argc, argv );
 
-    pvec_push( pp_args, "-I" INSTALL_DIR "/include" );
+    pvec_push( pp_args, "-I" DEFAULT_INCLUDE_DIR );
 
     /* Define these standard macros, as they need compiler support. */
     snprintf(buf1, 32, "-D__DATE__=\"%3s %2d %4d\"",
@@ -298,8 +318,8 @@ main(int argc, char **argv)
     }
 
     if ( !nostdlib ) {
-        pvec_push( ld_args, INSTALL_DIR "/lib/crt0.o" );
-        pvec_push( ld_args, INSTALL_DIR "/lib/libc.o" );
+        pvec_push( ld_args, DEFAULT_LIB_DIR "/crt0.o" );
+        pvec_push( ld_args, DEFAULT_LIB_DIR "/libc.o" );
     }
 
     res = preprocess(argc, argv);
