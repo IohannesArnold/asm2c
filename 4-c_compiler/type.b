@@ -146,6 +146,11 @@ elt_cmp(elt1, elt2) {
     return !elt1 && !elt2 || elt1 && elt2 && elt1[0] == elt2[0];
 }
 
+static
+is_void_ptr(dclt) {
+    return dclt && dclt[3] && dclt[3][0] == 'void';
+}
+
 /* Test whether types are compatible */
 static
 are_compat(type1, type2) {
@@ -171,7 +176,8 @@ are_compat(type1, type2) {
         /* "For two pointer types to be compatible, both shall be identically
          * qualified and both shall be pointers to compatible types." 
          * [C90 6.5.4.1]  Note we don't support type qualifiers yet. */
-        return are_compat( type1[3], type2[3] );
+        return are_compat( type1[3], type2[3] )
+            || is_void_ptr( type1[3]) || is_void_ptr( type2[3] );
 
     else if ( type1[0] == '[]' && type2[0] == '[]' )
         /* "For two array types to be compatible, both shall have compatible

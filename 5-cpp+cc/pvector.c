@@ -22,11 +22,13 @@ struct pvector {
     char **start, **end, **end_store;
 };
 
+void *malloc (int size);
+
 struct pvector*
 pvec_new() {
-    struct pvector* v = (struct pvector*) malloc( sizeof(struct pvector) );
+    struct pvector* v = malloc( sizeof(struct pvector) );
     int cap = 8;
-    v->start = v->end = (char**) malloc( sizeof(char*) * cap );
+    v->start = v->end = malloc( sizeof(char*) * cap );
     *v->end = 0;  /* null termination */
     v->end_store = v->start + cap;
     return v;
